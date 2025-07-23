@@ -23,7 +23,7 @@ export function BottomNavbar(): JSX.Element {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-[0_-4px_6px_-1px_rgb(0_0_0_/_0.1),_0_-2px_4px_-2px_rgb(0_0_0_/_0.06)] block md:hidden h-20">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-none  block md:hidden h-20">
       <ul className="grid grid-cols-5 h-full">
         {navItems.map((item) => {
           const isActive =
@@ -34,7 +34,7 @@ export function BottomNavbar(): JSX.Element {
             <li key={item.label} className="flex items-center justify-center ">
               <Link
                 href={item.href}
-                className={`group w-14 h-14 flex flex-col items-center justify-center py-2 rounded-full transition-all duration-300 ease-out ${
+                className={`group w-16 h-16 flex flex-col items-center justify-center py-1 px-0 rounded-full transition-all duration-300 ease-out ${
                   isActive
                     ? "bg-primary text-primary-foreground shadow-md" // Faol holatda fon va matn rangi
                     : "text-gray-500 hover:bg-gray-100 hover:text-gray-700" // Faol bo'lmagan holat
@@ -42,17 +42,17 @@ export function BottomNavbar(): JSX.Element {
               >
                 <div
                   className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-all duration-300 ease-out ${
-                    isActive ? "scale-110" : "" // Faol holatda ikonka kattalashadi
+                    isActive ? "scale-120" : "" // Faol holatda ikonka kattalashadi
                   }`}
                 >
                   <item.icon
-                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300 ${
+                    className={`w-5 h-5 sm:w-4 sm:h-4 transition-colors duration-300 ${
                       isActive ? "text-primary-foreground" : "text-gray-500 group-hover:text-gray-700" // Ikonka rangi
                     }`}
                   />
                 </div>
                 <span
-                  className={` text-[10px] sm:text-xs transition-all duration-300 ${
+                  className={`relative bottom-1 text-[10px] text-center sm:text-xs transition-all duration-300 ${
                     isActive ? "font-bold" : "font-medium" // Matn qalinligi
                   }`}
                 >
