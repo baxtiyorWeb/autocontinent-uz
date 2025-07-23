@@ -24,7 +24,6 @@ export default function RootLayout({
           {/* Add padding-bottom for mobile navbar */}
           {children}
         </main>
-        <Footer />
         <BottomNavbar /> {/* Render the bottom navbar */}
       </body>
     </html>

@@ -18,11 +18,9 @@ import { Footer } from "@/components/footer"; // Footer import qilindi
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Card komponentlari import qilindi
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator"; // Separator import qilindi
 import { EnhancedProductCard } from "@/components/ui/enhanced-product-card"; // EnhancedProductCard import qilindi
-import { TabsContent } from "@/components/ui/tabs"; // Import TabsContent for correct usage
 
 interface ProductDetail {
   id: number;
@@ -317,7 +315,7 @@ export default function ProductDetailPage(): JSX.Element {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      <main className="container mx-auto px-4 py-6 max-sm-xs:px-0 sm:px-6 lg:px-8">
         {/* Breadcrumb - keeping it commented out as in original */}
         {/* <Breadcrumb items={breadcrumbItems} className="mb-4" /> */}
 
@@ -608,203 +606,180 @@ export default function ProductDetailPage(): JSX.Element {
               </div>
             </div>
 
-            {/* Tabs Content (Overview, Description, etc.) */}
+            {/* Overview Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
-              <Tabs defaultValue="overview" className="mb-0">
-                <TabsList className="grid w-full grid-cols-4 h-10 text-sm bg-white rounded-lg shadow-sm border border-gray-200">
-                  <TabsTrigger value="overview">Obzor</TabsTrigger>
-                  <TabsTrigger value="description">Tavsif</TabsTrigger>
-                  <TabsTrigger value="specifications">Xususiyatlar</TabsTrigger>
-                  <TabsTrigger value="reviews">
-                    Sharhlar ({product.reviews})
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="overview" className="mt-4">
-                  <Card className="border-none shadow-none">
-                    <CardContent className="p-0">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                        Mahsulotga umumiy nazar
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed text-sm mb-3">
-                        {product.description}
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4"></div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                <TabsContent value="description" className="mt-4">
-                  <Card className="border-none shadow-none">
-                    <CardContent className="p-0">
-                      <p className="text-gray-700 leading-relaxed text-sm">
-                        {product.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                <TabsContent value="specifications" className="mt-4">
-                  <Card className="border-none shadow-none">
-                    <CardContent className="p-0">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                        {Object.entries(product.specifications).map(
-                          ([key, value]) => (
-                            <div
-                              key={key}
-                              className="flex justify-between items-center py-1.5 border-b border-gray-200 last:border-0"
-                            >
-                              <span className="font-medium text-gray-900 text-sm">
-                                {key}:
-                              </span>
-                              <span className="text-gray-700 text-right text-sm">
-                                {value}
-                              </span>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                {/* Added Compatibility tab as it was in the original code's data but not rendered */}
-                <TabsContent value="compatibility" className="mt-4">
-                  <Card className="border-none shadow-none">
-                    <CardContent className="p-0">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Quyidagi avtomobillarga mos keladi:
-                      </h3>
-                      <ul className="space-y-2">
-                        {product.compatibility.map((item, index) => (
-                          <li key={index} className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-                            <span className="text-gray-700 text-sm">
-                              {item}
-                            </span>
-                          </li>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Mahsulotga umumiy nazar
+              </h3>
+              <p className="text-gray-700 leading-relaxed text-sm mb-3">
+                {product.description}
+              </p>
+            </div>
+
+            {/* Description Section */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Tavsif
+              </h3>
+              <p className="text-gray-700 leading-relaxed text-sm">
+                {product.description}
+              </p>
+            </div>
+
+            {/* Specifications Section */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Xususiyatlar
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                {Object.entries(product.specifications).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex justify-between items-center py-1.5 border-b border-gray-200 last:border-0"
+                  >
+                    <span className="font-medium text-gray-900 text-sm">
+                      {key}:
+                    </span>
+                    <span className="text-gray-700 text-right text-sm">
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Compatibility Section */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Quyidagi avtomobillarga mos keladi:
+              </h3>
+              <ul className="space-y-2">
+                {product.compatibility.map((item, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                    <span className="text-gray-700 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Reviews Section */}
+            <div
+              className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6"
+              id="reviews"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-5">
+                Sharhlar ({product.reviews})
+              </h3>
+              <div className="space-y-6">
+                {/* Review Summary */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="text-4xl font-bold text-gray-900">
+                      {averageRating.toFixed(1)}
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-5 w-5 ${
+                              i < Math.floor(averageRating)
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
                         ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                <TabsContent value="reviews" className="mt-4" id="reviews">
-                  <div className="space-y-6">
-                    {/* Review Summary */}
-                    <Card className="border-none shadow-none">
-                      <CardContent className="p-0 flex flex-col sm:flex-row items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="text-4xl font-bold text-gray-900">
-                            {averageRating.toFixed(1)}
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-5 w-5 ${
-                                    i < Math.floor(averageRating)
-                                      ? "fill-yellow-400 text-yellow-400"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-gray-600 text-xs">
-                              {comments.length} ta sharh asosida
-                            </span>
-                          </div>
-                        </div>
-                        <Button className="bg-primary hover:bg-blue-600 text-primary-foreground font-semibold py-2.5 px-5 rounded-md text-sm">
-                          Sharh qoldirish
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    {/* Add review form */}
-                    <Card className="border-none shadow-none">
-                      <CardContent className="p-0">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-5">
-                          Sharh qoldiring
-                        </h3>
-                        <form
-                          onSubmit={handleReviewSubmit}
-                          className="space-y-4"
-                        >
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                              Baho bering:
-                            </label>
-                            <NewReviewRating
-                              rating={newReviewRating}
-                              setRating={setNewReviewRating}
-                            />
-                          </div>
-                          <div>
-                            <NewReviewComment
-                              comment={newReviewComment}
-                              setComment={setNewReviewComment}
-                            />
-                          </div>
-                          <Button
-                            type="submit"
-                            className="bg-primary hover:bg-blue-600 text-primary-foreground font-semibold py-2.5 px-5 rounded-md text-sm"
-                          >
-                            Sharh qoldirish
-                          </Button>
-                        </form>
-                      </CardContent>
-                    </Card>
-                    {/* Reviews list */}
-                    <div className="space-y-4">
-                      {comments.map((comment) => (
-                        <Card
-                          key={comment.id}
-                          className="border-none shadow-none"
-                        >
-                          <CardContent className="p-0">
-                            <div className="flex justify-between items-start mb-3">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-base">
-                                  {comment.user.charAt(0)}
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 text-sm">
-                                    {comment.user}
-                                  </h4>
-                                  <div className="flex items-center gap-1.5 mt-0.5">
-                                    <div className="flex">
-                                      {[...Array(5)].map((_, i) => (
-                                        <Star
-                                          key={i}
-                                          className={`h-3.5 w-3.5 ${
-                                            i < comment.rating
-                                              ? "fill-yellow-400 text-yellow-400"
-                                              : "text-gray-300"
-                                          }`}
-                                        />
-                                      ))}
-                                    </div>
-                                    <span className="text-xs text-gray-500">
-                                      {comment.date}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 text-gray-600 hover:text-primary"
-                              >
-                                <Heart className="h-3.5 w-3.5 mr-1" />
-                                {comment.likes}
-                              </Button>
-                            </div>
-                            <p className="text-gray-700 leading-relaxed text-sm">
-                              {comment.comment}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      ))}
+                      </div>
+                      <span className="text-gray-600 text-xs">
+                        {comments.length} ta sharh asosida
+                      </span>
                     </div>
                   </div>
-                </TabsContent>
-              </Tabs>
+                  <Button className="bg-primary hover:bg-blue-600 text-primary-foreground font-semibold py-2.5 px-5 rounded-md text-sm">
+                    Sharh qoldirish
+                  </Button>
+                </div>
+                {/* Add review form */}
+                <div className="pt-4 border-b border-gray-200 pb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                    Sharh qoldiring
+                  </h4>
+                  <form onSubmit={handleReviewSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Baho bering:
+                      </label>
+                      <NewReviewRating
+                        rating={newReviewRating}
+                        setRating={setNewReviewRating}
+                      />
+                    </div>
+                    <div>
+                      <NewReviewComment
+                        comment={newReviewComment}
+                        setComment={setNewReviewComment}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="bg-primary hover:bg-blue-600 text-primary-foreground font-semibold py-2.5 px-5 rounded-md text-sm"
+                    >
+                      Sharh qoldirish
+                    </Button>
+                  </form>
+                </div>
+                {/* Reviews list */}
+                <div className="space-y-4 pt-4">
+                  {comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-base">
+                            {comment.user.charAt(0)}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900 text-sm">
+                              {comment.user}
+                            </h4>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <div className="flex">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-3.5 w-3.5 ${
+                                      i < comment.rating
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {comment.date}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 text-gray-600 hover:text-primary"
+                        >
+                          <Heart className="h-3.5 w-3.5 mr-1" />
+                          {comment.likes}
+                        </Button>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed text-sm">
+                        {comment.comment}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -873,11 +848,21 @@ export default function ProductDetailPage(): JSX.Element {
         </div>
 
         {/* Related Products */}
-        <div className="mb-12 bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+        <div className="mb-12 bg-white rounded-xl shadow-lg border border-gray-100 max-sm-xs:p-1 p-4 sm:p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-5">
             O'xshash mahsulotlar
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+          <div
+            className="grid gap-4 xs:gap-3 sm:gap-4
+             grid-cols-2                  
+             max-sm-xs:grid-cols-2     
+             max-sm-xs:gap-2     
+             max-sm-xs:shadow-none     
+             sm:grid-cols-3
+             md:grid-cols-4
+             lg:grid-cols-5
+             xl:grid-cols-6"
+          >
             {relatedProducts.map((product) => (
               <EnhancedProductCard key={product.id} {...product} />
             ))}

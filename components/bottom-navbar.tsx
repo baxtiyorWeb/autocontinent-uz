@@ -17,7 +17,7 @@ const navItems: NavItem[] = [
   { href: "/catalog", icon: LayoutGrid, label: "Katalog" },
   { href: "/cart", icon: ShoppingCart, label: "Savat" },
   { href: "/promotions", icon: Tag, label: "Aksiyalar" },
-  { href: "/login", icon: User, label: "Profil" },
+  { href: "/profile", icon: User, label: "Profil" },
 ];
 
 export function BottomNavbar(): JSX.Element {
