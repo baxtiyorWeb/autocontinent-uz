@@ -351,7 +351,7 @@ export default function CategoryPage(): JSX.Element {
         <div className="px-4 py-6 sm:px-0 sm:py-0">
           <Breadcrumb
             items={breadcrumbItems}
-            className="mb-4 text-xs sm:text-sm"
+            // className="mb-4 text-xs sm:text-sm"
           />
 
           <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-8">
@@ -738,16 +738,12 @@ export default function CategoryPage(): JSX.Element {
               <div
                 className={`grid gap-3 sm:gap-4 ${
                   viewMode === "grid"
-                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                     : "grid-cols-1"
                 }`}
               >
                 {sampleProducts.map((product) => (
-                  <EnhancedProductCard
-                    key={product.id}
-                    {...product}
-                  
-                  />
+                  <EnhancedProductCard key={product.id} {...product} />
                 ))}
               </div>
 

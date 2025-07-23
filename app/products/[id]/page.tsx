@@ -12,6 +12,7 @@ import {
   Minus,
   Plus,
   CheckCircle,
+  X,
 } from "lucide-react"; // Barcha kerakli ikonalar import qilindi
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer"; // Footer import qilindi
@@ -72,15 +73,16 @@ const product: ProductDetail = {
   price: 45000,
   originalPrice: 55000,
   images: [
-    "/placeholder.svg?height=500&width=500&text=Product+Image+1",
-    "/placeholder.svg?height=500&width=500&text=Product+Image+2",
-    "/placeholder.svg?height=500&width=500&text=Product+Image+3",
-    "/placeholder.svg?height=500&width=500&text=Product+Image+4",
+    "https://sp-ao.shortpixel.ai/client/to_auto%2Cq_glossy%2Cret_img%2Cw_1024%2Ch_684/https%3A//www.wyotech.edu/wp-content/uploads/2024/10/DirtyAirFilter-1024x684.png",
+    "https://www.take5.com/_next/image/?q=75&url=https%3A%2F%2Fimages.ctfassets.net%2Fv3p61xoag5ig%2F6u6WzKPDO4aTUGSv2VubLs%2F6ec302024a132c7aa2d8703f3d3ccce2%2FAdobeStock_216561912.jpeg&w=1920",
+    "https://scottsauto.com/wp-content/uploads/2024/08/Car-cabin-air-filter.png",
+    "https://www.ebaymotorsblog.com/motors/blog/wp-content/uploads/2023/10/dirty_and_clean_engine_air_filters-2000.jpg",
   ],
   rating: 4.8,
   reviews: 124,
   likes: 89,
-  videoUrl: "https://youtube.com/watch?v=example",
+  videoUrl:
+    "https://v.made-in-china.com/ucv/sbr/fb313a53798062bfa37faa9f57ae7e/7a2d91b43910307427653209950811_h264_def.mp4",
   brand: "Chevrolet",
   model: "Lacetti",
   inStock: true,
@@ -118,69 +120,138 @@ const product: ProductDetail = {
 
 const relatedProducts: RelatedProduct[] = [
   {
-    id: 2,
-    name: "Havo filteri Chevrolet Lacetti",
-    price: 35000,
-    originalPrice: 42000,
-    image: "/placeholder.svg?height=240&width=300&text=Related+Product+1",
-    rating: 4.7,
-    reviewCount: 89,
-    likeCount: 67,
+    id: 1,
+    name: "Motor yog'i filteri Chevrolet Lacetti",
+    price: 45000,
+    originalPrice: 55000,
+    // Prom.uz saytidan olingan rasmga olib boruvchi havola
+    image:
+      "https://www.prom.uz/_ipx/f_webp/https://devel.prom.uz/upload//products/2023/2/20/2/15-1.PNG",
+    rating: 4.8,
+    reviewCount: 124,
+    likeCount: 89,
+    hasVideo: true,
     brand: "Chevrolet",
+    inStock: true,
+  },
+  {
+    id: 2,
+    name: "Tormoz kolodkalari Mercedes W205",
+    price: 320000,
+    // Bu havola to'g'ridan-to'g'ri rasm emas, tormoz kolodkalari haqida sahifaga olib borishi mumkin.
+    image:
+      "https://files.glotr.uz/company/000/005/148/products/2018/01/20/15164302157735-060b8bdbc89e007edc8612b2e5b2d0fe.jpg?_=ozb9y",
+    rating: 4.9,
+    reviewCount: 67,
+    likeCount: 156,
+    brand: "Mercedes-Benz",
     inStock: true,
   },
   {
     id: 3,
-    name: "Yoqilg'i filteri Chevrolet Lacetti",
-    price: 28000,
-    image: "/placeholder.svg?height=240&width=300&text=Related+Product+2",
-    rating: 4.6,
-    reviewCount: 156,
-    likeCount: 98,
-    brand: "Chevrolet",
-    inStock: true,
+    name: "Akkumulyator 60Ah Universal",
+    price: 850000,
+    originalPrice: 950000,
+    // OLX.uz saytidan olingan rasmga olib boruvchi havola
+    image:
+      "https://frankfurt.apollo.olxcdn.com/v1/files/gs4spq08t6uu3-UZ/image;s=1000x700",
+    rating: 4.7,
+    reviewCount: 203,
+    likeCount: 234,
+    // hasVideo: true,
+    brand: "Universal",
+    inStock: false,
   },
   {
     id: 4,
-    name: "Salon filteri Chevrolet Lacetti",
-    price: 32000,
-    image: "/placeholder.svg?height=240&width=300&text=Related+Product+3",
-    rating: 4.5,
-    reviewCount: 78,
-    likeCount: 123,
-    brand: "Chevrolet",
+    name: "Spark plug BMW E90",
+    price: 25000,
+    // eBay.com saytidan olingan rasmga olib boruvchi havola
+    image: "https://i.ebayimg.com/images/g/SGkAAOSw66hmTNah/s-l1600.webp",
+    rating: 4.6,
+    reviewCount: 89,
+    likeCount: 67,
+    brand: "BMW",
     inStock: true,
   },
   {
     id: 5,
-    name: "Tormoz suyuqligi DOT4",
-    price: 50000,
-    image: "/placeholder.svg?height=240&width=300&text=Related+Product+4",
-    rating: 4.9,
-    reviewCount: 45,
-    likeCount: 30,
-    brand: "Bosch",
+    name: "Havo filtri Toyota Camry XV70",
+    price: 90000,
+    originalPrice: 100000,
+    // Uzum Market saytidan olingan rasmga olib boruvchi havola
+    image: "https://images.uzum.uz/cpdgksjmdtjnp737srug/original.jpg",
+    rating: 4.5,
+    reviewCount: 75,
+    likeCount: 110,
+    brand: "Toyota",
     inStock: true,
   },
   {
     id: 6,
-    name: "Antifriz konsentrati",
+    name: "Rul gidravlikasi moyi Lada Granta",
     price: 60000,
-    image: "/placeholder.svg?height=240&width=300&text=Related+Product+5",
-    rating: 4.7,
-    reviewCount: 60,
-    likeCount: 40,
-    brand: "Liqui Moly",
+    // Lada Granta rul gidravlikasi moyi uchun umumiy qidiruv havolasi. Aniq rasm topilmadi, shuning uchun siz ushbu sahifalarda o'zingiz mos rasmni topishingiz kerak bo'ladi.
+    image:
+      "https://files.glotr.uz/company/000/004/377/products/2015/08/24/14404312035167-680d995de4babcd3869231f81b369eac.jpg?_=ozb9y",
+    rating: 4.2,
+    reviewCount: 45,
+    likeCount: 30,
+    brand: "Lada",
     inStock: true,
   },
   {
     id: 7,
-    name: "Shisha yuvish suyuqligi",
-    price: 15000,
-    image: "/placeholder.svg?height=240&width=300&text=Related+Product+6",
-    rating: 4.2,
-    reviewCount: 200,
-    likeCount: 150,
+    name: "Shina 205/55 R16 (yozgi)",
+    price: 700000,
+    originalPrice: 750000,
+    // Sello.uz saytidan olingan shina rasmiga olib boruvchi havola
+    image:
+      "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20220719/c38cd196-4738-49df-8d6a-aefe51bc4acf.JPEG",
+    rating: 4.9,
+    reviewCount: 310,
+    likeCount: 450,
+    brand: "Michelin",
+    inStock: true,
+  },
+  {
+    id: 8,
+    name: "Antifriz (Qizil) 5L",
+    price: 120000,
+    // Drivers Shop saytidan olingan rasmga olib boruvchi havola
+    image:
+      "https://shop.driversvillage.uz/uploads/product/KK/KK/f3/antifriz-krasnyi-5l-g12-40-c-super-yuko-4820070248227-1-6.jpg?cacheimg=77903",
+    rating: 4.7,
+    reviewCount: 95,
+    likeCount: 180,
+    // hasVideo: true,
+    brand: "Liqui Moly",
+    inStock: true,
+  },
+  {
+    id: 9,
+    name: "Avtomobil polikchalari GM Cobalt",
+    price: 180000,
+    originalPrice: 200000,
+    // Sello.uz saytidan olingan avtomobil gilamchalari rasmiga olib boruvchi havola
+    image:
+      "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20240226/18217fba0e9fac667350ae818f8d0e55.png",
+    rating: 4.3,
+    reviewCount: 50,
+    likeCount: 70,
+    brand: "GM",
+    inStock: false,
+  },
+  {
+    id: 10,
+    name: "Avtomobil tozalash uchun vositalar to'plami",
+    price: 250000,
+    // Ushbu havolada to'plamning o'zi emas, balki avtomobil tozalash vositalari sotiladigan umumiy sahifa bo'lishi mumkin.
+    image:
+      "https://images2.zoodmall.uz/cdn-cgi/image/w=500,fit=contain,f=auto/https%3A%2F%2Fimages2.zoodmall.com%2Fhttps%253A%2Fimg.joomcdn.net%2F536a3055093bae4f735fb3560bc45645ae8accdf_original.jpeg",
+    rating: 4.6,
+    reviewCount: 150,
+    likeCount: 200,
     brand: "Turtle Wax",
     inStock: true,
   },
@@ -248,6 +319,45 @@ const NewReviewRating = ({
     </div>
   );
 };
+// VideoPlayer komponenti
+const VideoPlayer = ({
+  videoUrl,
+  onClose,
+}: {
+  videoUrl: string;
+  onClose: () => void;
+}) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
+      <div className="relative w-full max-w-4xl h-auto max-h-[90vh] mx-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute -top-10 right-0 text-white hover:bg-white/20"
+        >
+          <X className="h-6 w-6" />
+        </Button>
+        {
+          <video
+            controls
+            autoPlay
+            className="w-full h-full object-contain rounded-lg"
+          >
+            <source
+              src={
+                videoUrl ||
+                "https://v.made-in-china.com/ucv/sbr/fb313a53798062bfa37faa9f57ae7e/7a2d91b43910307427653209950811_h264_def.mp4"
+              }
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
+        }
+      </div>
+    </div>
+  );
+};
 
 const NewReviewComment = ({
   comment,
@@ -259,7 +369,7 @@ const NewReviewComment = ({
   return (
     <Textarea
       placeholder="Sizning fikringiz..."
-      className="resize-none border rounded-md shadow-sm focus:ring focus:ring-primary focus:border-primary"
+      className="resize-none border rounded-md  focus:ring focus:ring-primary focus:border-primary"
       value={comment}
       onChange={(e) => setComment(e.target.value)}
       rows={3}
@@ -284,6 +394,7 @@ export default function ProductDetailPage(): JSX.Element {
     product.simTypes?.[0] || null
   );
 
+  const [showVideo, setShowVideo] = useState(false);
   const breadcrumbItems = [
     { label: "Bosh sahifa", href: "/" },
     { label: "Kategoriyalar", href: "/categories" },
@@ -322,7 +433,7 @@ export default function ProductDetailPage(): JSX.Element {
         <div className="grid lg:grid-cols-3 gap-6 mb-12">
           {/* Left Column: Product Image and Details */}
           <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
               {/* Product Title & Actions */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-900 leading-tight">
@@ -366,13 +477,21 @@ export default function ProductDetailPage(): JSX.Element {
               <div className="grid md:grid-cols-2 gap-5">
                 {/* Image Gallery - Sticky on larger screens */}
                 <div className="relative flex flex-col items-center gap-4 md:sticky md:top-6 self-start min-w-0">
-                  <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm">
-                    <Image
-                      src={product.images[selectedImage] || "/placeholder.svg"}
-                      alt={product.name}
-                      fill
-                      className="object-contain"
-                    />
+                  <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center ">
+                    {
+                      <Image
+                        src={
+                          product.images[selectedImage] ||
+                          "https://image.made-in-china.com/202f0j00BJRWFPVCGAbM/Car-Motores-1-6L-F16D3-Engine-for-Chevrolet-Cruze-Aveo-Optra-Lacetti-Daewoo-Nexia-Lanos-Buick-Excelle.webp"
+                        }
+                        alt={
+                          product.name ||
+                          "https://image.made-in-china.com/202f0j00BJRWFPVCGAbM/Car-Motores-1-6L-F16D3-Engine-for-Chevrolet-Cruze-Aveo-Optra-Lacetti-Daewoo-Nexia-Lanos-Buick-Excelle.webp"
+                        }
+                        fill
+                        className="object-contain"
+                      />
+                    }
                     {product.originalPrice &&
                       product.price < product.originalPrice && (
                         <Badge className="absolute top-3 left-3 bg-destructive text-white font-bold text-xs px-2 py-0.5">
@@ -388,6 +507,7 @@ export default function ProductDetailPage(): JSX.Element {
                         <Button
                           size="sm"
                           className="rounded-full bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1"
+                          onClick={() => setShowVideo(true)}
                         >
                           <Play className="h-4 w-4 mr-1.5" />
                           Video ko'rish
@@ -402,7 +522,7 @@ export default function ProductDetailPage(): JSX.Element {
                         onClick={() => setSelectedImage(index)}
                         className={`flex-shrink-0 border-2 rounded-md overflow-hidden transition-all duration-300 ${
                           selectedImage === index
-                            ? "border-primary shadow-sm"
+                            ? "border-primary "
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
@@ -607,7 +727,7 @@ export default function ProductDetailPage(): JSX.Element {
             </div>
 
             {/* Overview Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
                 Mahsulotga umumiy nazar
               </h3>
@@ -617,7 +737,7 @@ export default function ProductDetailPage(): JSX.Element {
             </div>
 
             {/* Description Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
                 Tavsif
               </h3>
@@ -627,7 +747,7 @@ export default function ProductDetailPage(): JSX.Element {
             </div>
 
             {/* Specifications Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
                 Xususiyatlar
               </h3>
@@ -649,7 +769,7 @@ export default function ProductDetailPage(): JSX.Element {
             </div>
 
             {/* Compatibility Section */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">
                 Quyidagi avtomobillarga mos keladi:
               </h3>
@@ -665,7 +785,7 @@ export default function ProductDetailPage(): JSX.Element {
 
             {/* Reviews Section */}
             <div
-              className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6"
+              className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6"
               id="reviews"
             >
               <h3 className="text-xl font-semibold text-gray-900 mb-5">
@@ -785,7 +905,7 @@ export default function ProductDetailPage(): JSX.Element {
 
           {/* Right Column: Installment Payment - Sticky on larger screens */}
           <div className="lg:col-span-1 min-w-0">
-            <Card className="sticky top-6 bg-white p-5 rounded-xl shadow-lg border border-gray-100">
+            <Card className="sticky top-6 bg-white p-5 rounded-xl  border border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-bold text-gray-900">
                   Rassrochka to'lovi
@@ -848,7 +968,7 @@ export default function ProductDetailPage(): JSX.Element {
         </div>
 
         {/* Related Products */}
-        <div className="mb-12 bg-white rounded-xl shadow-lg border border-gray-100 max-sm-xs:p-1 p-4 sm:p-6">
+        <div className="mb-12 bg-white rounded-xl  border border-gray-200 max-sm-xs:p-0 p-4 sm:p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-5">
             O'xshash mahsulotlar
           </h2>
@@ -859,9 +979,9 @@ export default function ProductDetailPage(): JSX.Element {
              max-sm-xs:gap-2     
              max-sm-xs:shadow-none     
              sm:grid-cols-3
-             md:grid-cols-4
-             lg:grid-cols-5
-             xl:grid-cols-6"
+             md:grid-cols-3
+             lg:grid-cols-4
+             xl:grid-cols-5"
           >
             {relatedProducts.map((product) => (
               <EnhancedProductCard key={product.id} {...product} />
@@ -870,6 +990,12 @@ export default function ProductDetailPage(): JSX.Element {
         </div>
       </main>
       <Footer />
+      {showVideo && product.videoUrl && (
+        <VideoPlayer
+          videoUrl={product.videoUrl}
+          onClose={() => setShowVideo(false)}
+        />
+      )}
     </div>
   );
 }
