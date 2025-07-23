@@ -1,7 +1,6 @@
 "use client";
-
 import type React from "react";
-import { JSX, useState } from "react";
+import { type JSX, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,11 +12,9 @@ import {
   Minus,
   Plus,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react"; // Barcha kerakli ikonalar import qilindi
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer"; // Footer import qilindi
-import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Card komponentlari import qilindi
@@ -167,6 +164,28 @@ const relatedProducts: RelatedProduct[] = [
     brand: "Bosch",
     inStock: true,
   },
+  {
+    id: 6,
+    name: "Antifriz konsentrati",
+    price: 60000,
+    image: "/placeholder.svg?height=240&width=300&text=Related+Product+5",
+    rating: 4.7,
+    reviewCount: 60,
+    likeCount: 40,
+    brand: "Liqui Moly",
+    inStock: true,
+  },
+  {
+    id: 7,
+    name: "Shisha yuvish suyuqligi",
+    price: 15000,
+    image: "/placeholder.svg?height=240&width=300&text=Related+Product+6",
+    rating: 4.2,
+    reviewCount: 200,
+    likeCount: 150,
+    brand: "Turtle Wax",
+    inStock: true,
+  },
 ];
 
 const comments: Comment[] = [
@@ -296,313 +315,302 @@ export default function ProductDetailPage(): JSX.Element {
       comments.length || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50  ">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-
-     <main className="container border mx-auto px-4 py-6 max-sm-xs:px-0 max-sm-xs:w-[90%] sm:px-2 sm:py-4 xs:px-1 xs:py-3">
-
-        {/* <Breadcrumb
-          items={breadcrumbItems}
-          className="max-sm-xs:text-sm max-sm-xs:flex max-sm-xs:flex-wrap"
-        /> */}
+      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        {/* Breadcrumb - keeping it commented out as in original */}
+        {/* <Breadcrumb items={breadcrumbItems} className="mb-4" /> */}
 
         <div className="grid lg:grid-cols-3 gap-6 mb-12">
-          {/* Main Product Content */}
-          <div className="lg:col-span-2 bg-white  rounded-xl shadow-lg border border-gray-100">
-            {/* Product Title & Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-0">
-              <h1 className="text-2xl  lg:text-3xl font-extrabold text-gray-900 leading-tight">
-                {product.name}
-              </h1>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(product.rating)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
+          {/* Left Column: Product Image and Details */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              {/* Product Title & Actions */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-900 leading-tight">
+                  {product.name}
+                </h1>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < Math.floor(product.rating)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="font-semibold text-sm text-gray-900">
+                      {product.rating}
+                    </span>
+                    <Link
+                      href="#reviews"
+                      className="text-xs text-gray-500 hover:text-primary transition-colors"
+                    >
+                      ({product.reviews} sharh)
+                    </Link>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-500 hover:text-primary"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span className="sr-only">Ulashish</span>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                {/* Image Gallery - Sticky on larger screens */}
+                <div className="relative flex flex-col items-center gap-4 md:sticky md:top-6 self-start">
+                  <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm">
+                    <Image
+                      src={product.images[selectedImage] || "/placeholder.svg"}
+                      alt={product.name}
+                      fill
+                      className="object-contain"
+                    />
+                    {product.originalPrice &&
+                      product.price < product.originalPrice && (
+                        <Badge className="absolute top-3 left-3 bg-destructive text-white font-bold text-xs px-2 py-0.5">
+                          -
+                          {Math.round(
+                            (1 - product.price / product.originalPrice) * 100
+                          )}
+                          % chegirma
+                        </Badge>
+                      )}
+                    {product.videoUrl && selectedImage === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <Button
+                          size="sm"
+                          className="rounded-full bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1"
+                        >
+                          <Play className="h-4 w-4 mr-1.5" />
+                          Video ko'rish
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2 justify-center mt-4 overflow-x-auto pb-2">
+                    {product.images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`flex-shrink-0 border-2 rounded-md overflow-hidden transition-all duration-300 ${
+                          selectedImage === index
+                            ? "border-primary shadow-sm"
+                            : "border-gray-200 hover:border-gray-300"
                         }`}
-                      />
+                      >
+                        <Image
+                          src={image || "/placeholder.svg"}
+                          alt={`${product.name} ${index + 1}`}
+                          width={70}
+                          height={70}
+                          className="w-16 h-16 object-cover"
+                        />
+                      </button>
                     ))}
                   </div>
-                  <span className="font-semibold text-sm text-gray-900">
-                    {product.rating}
-                  </span>
-                  <Link
-                    href="#reviews"
-                    className="text-xs text-gray-500 hover:text-primary transition-colors"
-                  >
-                    ({product.reviews} sharh)
-                  </Link>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-gray-500 hover:text-primary"
-                >
-                  <Share2 className="h-4 w-4" />
-                  <span className="sr-only">Ulashish</span>
-                </Button>
-              </div>
-            </div>
 
-            <div className="grid md:grid-cols-2 gap-5">
-              {/* Image Gallery */}
-              <div className="relative flex flex-col items-center gap-4 mt-16 max-sm-xs:mt-0 sm-xs:mt-0">
-                {/* Modified: Changed to flex-col and added gap */}
-                <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm">
-                  <Image
-                    src={product.images[selectedImage] || "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-contain"
-                  />
-                  {/* Placeholder for "SUPER PRICE" badge */}
-                  {product.originalPrice &&
-                    product.price < product.originalPrice && (
-                      <Badge className="absolute top-3 left-3 bg-destructive text-white font-bold text-xs px-2 py-0.5">
-                        -
-                        {Math.round(
-                          (1 - product.price / product.originalPrice) * 100
-                        )}
-                        % chegirma
-                      </Badge>
-                    )}
-                  {product.videoUrl && selectedImage === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                      <Button
-                        size="sm"
-                        className="rounded-full bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1"
-                      >
-                        <Play className="h-4 w-4 mr-1.5" />
-                        Video ko'rish
-                      </Button>
+                {/* Product Options & Details */}
+                <div className="space-y-4">
+                  {product.colors && product.colors.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        Rang: {selectedColor}
+                      </h3>
+                      <div className="flex gap-1.5">
+                        {product.colors.map((color) => (
+                          <Button
+                            key={color.name}
+                            variant={
+                              selectedColor === color.name
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => setSelectedColor(color.name)}
+                            className={`h-8 w-8 rounded-full border-2 ${
+                              selectedColor === color.name
+                                ? "border-primary"
+                                : "border-gray-300"
+                            }`}
+                            style={{
+                              backgroundColor: color.hex,
+                              borderColor:
+                                selectedColor === color.name
+                                  ? "hsl(var(--primary))"
+                                  : "hsl(var(--border))",
+                            }}
+                            aria-label={color.name}
+                          >
+                            {color.name === "Oq" && selectedColor === "Oq" && (
+                              <CheckCircle className="h-3.5 w-3.5 text-primary-foreground" />
+                            )}
+                            {color.name === "Qora" &&
+                              selectedColor === "Qora" && (
+                                <CheckCircle className="h-3.5 w-3.5 text-primary-foreground" />
+                              )}
+                            {color.name === "Kumush" &&
+                              selectedColor === "Kumush" && (
+                                <CheckCircle className="h-3.5 w-3.5 text-primary-foreground" />
+                              )}
+                            <span className="sr-only">{color.name}</span>
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   )}
-                </div>
-                {/* Thumbnail Images - Moved below the main image and arranged horizontally */}
-                <div className="flex gap-2 justify-center mt-4 overflow-x-auto pb-2">
-                  {" "}
-                  {/* Added justify-center and overflow-x-auto */}
-                  {product.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`flex-shrink-0 border-2 rounded-md overflow-hidden transition-all duration-300 ${
-                        selectedImage === index
-                          ? "border-primary shadow-sm"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
+                  {product.capacities && product.capacities.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        Hajmi: {selectedCapacity}
+                      </h3>
+                      <div className="flex gap-1.5">
+                        {product.capacities.map((capacity) => (
+                          <Button
+                            key={capacity}
+                            variant={
+                              selectedCapacity === capacity
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => setSelectedCapacity(capacity)}
+                            className="px-3 py-1.5 h-8 text-sm"
+                          >
+                            {capacity}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {product.simTypes && product.simTypes.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        SIM: {selectedSimType}
+                      </h3>
+                      <div className="flex gap-1.5">
+                        {product.simTypes.map((simType) => (
+                          <Button
+                            key={simType}
+                            variant={
+                              selectedSimType === simType
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => setSelectedSimType(simType)}
+                            className="px-3 py-1.5 h-8 text-sm"
+                          >
+                            {simType}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <Separator />
+                  {/* Price & Quantity */}
+                  <div className="space-y-3">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-2xl font-bold text-gray-900">
+                        {product.price.toLocaleString()} so'm
+                      </span>
+                      {product.originalPrice && (
+                        <span className="text-lg text-gray-500 line-through">
+                          {product.originalPrice.toLocaleString()} so'm
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-gray-900 text-base">
+                        Miqdor:
+                      </span>
+                      <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          disabled={quantity <= 1}
+                          className="h-10 w-10 rounded-none hover:bg-gray-100"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="px-4 py-2 min-w-[60px] text-center font-semibold text-lg">
+                          {quantity}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            setQuantity(
+                              Math.min(product.stockCount, quantity + 1)
+                            )
+                          }
+                          disabled={quantity >= product.stockCount}
+                          className="h-10 w-10 rounded-none hover:bg-gray-100"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <Button
+                      size="lg"
+                      className="flex-1 h-10 bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-blue-800 text-primary-foreground font-semibold text-base"
+                      disabled={!product.inStock}
                     >
-                      <Image
-                        src={image || "/placeholder.svg"}
-                        alt={`${product.name} ${index + 1}`}
-                        width={70}
-                        height={70}
-                        className="w-16 h-16 object-cover"
+                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      Savatga qo'shish
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="h-10 w-10 bg-transparent"
+                      onClick={() => setIsLiked(!isLiked)}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          isLiked ? "fill-destructive text-destructive" : ""
+                        }`}
                       />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Product Options & Details */}
-              <div className="space-y-4">
-                {product.colors && product.colors.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      Rang: {selectedColor}
-                    </h3>
-                    <div className="flex gap-1.5">
-                      {product.colors.map((color) => (
-                        <Button
-                          key={color.name}
-                          variant={
-                            selectedColor === color.name ? "default" : "outline"
-                          }
-                          onClick={() => setSelectedColor(color.name)}
-                          className={`h-8 w-8 rounded-full border-2 ${
-                            selectedColor === color.name
-                              ? "border-primary"
-                              : "border-gray-300"
-                          }`}
-                          style={{
-                            backgroundColor: color.hex,
-                            borderColor:
-                              selectedColor === color.name
-                                ? "hsl(var(--primary))"
-                                : "hsl(var(--border))",
-                          }}
-                          aria-label={color.name}
-                        >
-                          {color.name === "Oq" && selectedColor === "Oq" && (
-                            <CheckCircle className="h-3.5 w-3.5 text-primary-foreground" />
-                          )}
-                          {color.name === "Qora" &&
-                            selectedColor === "Qora" && (
-                              <CheckCircle className="h-3.5 w-3.5 text-primary-foreground" />
-                            )}
-                          {color.name === "Kumush" &&
-                            selectedColor === "Kumush" && (
-                              <CheckCircle className="h-3.5 w-3.5 text-primary-foreground" />
-                            )}
-                          <span className="sr-only">{color.name}</span>
-                        </Button>
-                      ))}
+                    </Button>
+                  </div>
+                  {/* Product Attributes */}
+                  <div className="space-y-1.0 text-gray-700 text-sm">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Brend:</span>
+                      <span>{product.brand}</span>
                     </div>
-                  </div>
-                )}
-
-                {product.capacities && product.capacities.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      Hajmi: {selectedCapacity}
-                    </h3>
-                    <div className="flex gap-1.5">
-                      {product.capacities.map((capacity) => (
-                        <Button
-                          key={capacity}
-                          variant={
-                            selectedCapacity === capacity
-                              ? "default"
-                              : "outline"
-                          }
-                          onClick={() => setSelectedCapacity(capacity)}
-                          className="px-3 py-1.5 h-8 text-sm"
-                        >
-                          {capacity}
-                        </Button>
-                      ))}
+                    <div className="flex justify-between">
+                      <span className="font-medium">Model:</span>
+                      <span>{product.model}</span>
                     </div>
-                  </div>
-                )}
-
-                {product.simTypes && product.simTypes.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      SIM: {selectedSimType}
-                    </h3>
-                    <div className="flex gap-1.5">
-                      {product.simTypes.map((simType) => (
-                        <Button
-                          key={simType}
-                          variant={
-                            selectedSimType === simType ? "default" : "outline"
-                          }
-                          onClick={() => setSelectedSimType(simType)}
-                          className="px-3 py-1.5 h-8 text-sm"
-                        >
-                          {simType}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <Separator />
-
-                {/* Price & Quantity */}
-                <div className="space-y-3">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {product.price.toLocaleString()} so'm
-                    </span>
-                    {product.originalPrice && (
-                      <span className="text-lg text-gray-500 line-through">
-                        {product.originalPrice.toLocaleString()} so'm
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-gray-900 text-base">
-                      Miqdor:
-                    </span>
-                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        disabled={quantity <= 1}
-                        className="h-10 w-10 rounded-none hover:bg-gray-100"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="px-4 py-2 min-w-[60px] text-center font-semibold text-lg">
-                        {quantity}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          setQuantity(
-                            Math.min(product.stockCount, quantity + 1)
-                          )
+                    <div className="flex justify-between">
+                      <span className="font-medium">Mavjudligi:</span>
+                      <span
+                        className={
+                          product.inStock ? "text-green-600" : "text-red-600"
                         }
-                        disabled={quantity >= product.stockCount}
-                        className="h-10 w-10 rounded-none hover:bg-gray-100"
                       >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                        {product.inStock ? "Omborda mavjud" : "Tugagan"}
+                      </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    size="lg"
-                    className="flex-1 h-10 bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-blue-800 text-primary-foreground font-semibold text-base"
-                    disabled={!product.inStock}
-                  >
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Savatga qo'shish
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="h-10 w-10 bg-transparent"
-                    onClick={() => setIsLiked(!isLiked)}
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${
-                        isLiked ? "fill-destructive text-destructive" : ""
-                      }`}
-                    />
-                  </Button>
-                </div>
-
-                {/* Product Attributes */}
-                <div className="space-y-1.0 text-gray-700 text-sm">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Brend:</span>
-                    <span>{product.brand}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Model:</span>
-                    <span>{product.model}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Mavjudligi:</span>
-                    <span
-                      className={
-                        product.inStock ? "text-green-600" : "text-red-600"
-                      }
-                    >
-                      {product.inStock ? "Omborda mavjud" : "Tugagan"}
-                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Sidebar - Installment Payment */}
-          </div>
-          <div>
-            <div>
-              <Tabs defaultValue="overview" className="mb-12">
+            {/* Tabs Content (Overview, Description, etc.) */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+              <Tabs defaultValue="overview" className="mb-0">
                 <TabsList className="grid w-full grid-cols-4 h-10 text-sm bg-white rounded-lg shadow-sm border border-gray-200">
                   <TabsTrigger value="overview">Obzor</TabsTrigger>
                   <TabsTrigger value="description">Tavsif</TabsTrigger>
@@ -611,9 +619,9 @@ export default function ProductDetailPage(): JSX.Element {
                     Sharhlar ({product.reviews})
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="overview" className="mt-0">
-                  <Card>
-                    <CardContent className="p-6">
+                <TabsContent value="overview" className="mt-4">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="p-0">
                       <h3 className="text-xl font-semibold text-gray-900 mb-3">
                         Mahsulotga umumiy nazar
                       </h3>
@@ -624,20 +632,18 @@ export default function ProductDetailPage(): JSX.Element {
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                <TabsContent value="description" className="mt-0">
-                  <Card>
-                    <CardContent className="p-6">
+                <TabsContent value="description" className="mt-4">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="p-0">
                       <p className="text-gray-700 leading-relaxed text-sm">
                         {product.description}
                       </p>
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                <TabsContent value="specifications" className="mt-0">
-                  <Card>
-                    <CardContent className="p-6">
+                <TabsContent value="specifications" className="mt-4">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="p-0">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                         {Object.entries(product.specifications).map(
                           ([key, value]) => (
@@ -658,10 +664,10 @@ export default function ProductDetailPage(): JSX.Element {
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                <TabsContent value="compatibility" className="mt-0">
-                  <Card>
-                    <CardContent className="p-6">
+                {/* Added Compatibility tab as it was in the original code's data but not rendered */}
+                <TabsContent value="compatibility" className="mt-4">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="p-0">
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">
                         Quyidagi avtomobillarga mos keladi:
                       </h3>
@@ -678,12 +684,11 @@ export default function ProductDetailPage(): JSX.Element {
                     </CardContent>
                   </Card>
                 </TabsContent>
-
-                <TabsContent value="reviews" className="mt-0" id="reviews">
+                <TabsContent value="reviews" className="mt-4" id="reviews">
                   <div className="space-y-6">
                     {/* Review Summary */}
-                    <Card>
-                      <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <Card className="border-none shadow-none">
+                      <CardContent className="p-0 flex flex-col sm:flex-row items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <div className="text-4xl font-bold text-gray-900">
                             {averageRating.toFixed(1)}
@@ -711,10 +716,9 @@ export default function ProductDetailPage(): JSX.Element {
                         </Button>
                       </CardContent>
                     </Card>
-
                     {/* Add review form */}
-                    <Card>
-                      <CardContent className="p-6">
+                    <Card className="border-none shadow-none">
+                      <CardContent className="p-0">
                         <h3 className="text-xl font-semibold text-gray-900 mb-5">
                           Sharh qoldiring
                         </h3>
@@ -746,12 +750,14 @@ export default function ProductDetailPage(): JSX.Element {
                         </form>
                       </CardContent>
                     </Card>
-
                     {/* Reviews list */}
                     <div className="space-y-4">
                       {comments.map((comment) => (
-                        <Card key={comment.id}>
-                          <CardContent className="p-6">
+                        <Card
+                          key={comment.id}
+                          className="border-none shadow-none"
+                        >
+                          <CardContent className="p-0">
                             <div className="flex justify-between items-start mb-3">
                               <div className="flex items-center gap-2.5">
                                 <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-base">
@@ -799,82 +805,85 @@ export default function ProductDetailPage(): JSX.Element {
                   </div>
                 </TabsContent>
               </Tabs>
-              <Card className="sticky border-none top-20 bg-white p-5 rounded-xl shadow-none ">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold text-gray-900">
-                    Rassrochka to'lovi
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center text-gray-700 text-sm">
-                    <span className="font-medium">Oylar:</span>
-                    <div className="flex gap-1.5">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="h-8 px-3 text-sm"
-                      >
-                        6
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-3 text-sm bg-transparent"
-                      >
-                        12
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-3 text-sm bg-transparent"
-                      >
-                        18
-                      </Button>
-                    </div>
+            </div>
+          </div>
+
+          {/* Right Column: Installment Payment - Sticky on larger screens */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-6 bg-white p-5 rounded-xl shadow-lg border border-gray-100">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold text-gray-900">
+                  Rassrochka to'lovi
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center text-gray-700 text-sm">
+                  <span className="font-medium">Oylar:</span>
+                  <div className="flex gap-1.5">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-8 px-3 text-sm"
+                    >
+                      6
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 text-sm bg-transparent"
+                    >
+                      12
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 text-sm bg-transparent"
+                    >
+                      18
+                    </Button>
                   </div>
-                  <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-md p-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <Image
-                        src="/placeholder.svg?height=20&width=20&text=X"
-                        alt="Xazna logo"
-                        width={20}
-                        height={20}
-                        className="rounded-full"
-                      />
-                      <span className="font-semibold text-blue-800 text-sm">
-                        xazna
-                      </span>
-                    </div>
-                    <span className="font-bold text-blue-800 text-base">
-                      2 066 400 so'm
+                </div>
+                <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-md p-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <Image
+                      src="/placeholder.svg?height=20&width=20&text=X"
+                      alt="Xazna logo"
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    <span className="font-semibold text-blue-800 text-sm">
+                      xazna
                     </span>
                   </div>
-                  <div className="flex justify-between font-semibold text-base text-gray-900">
-                    <span>Umumiy summa:</span>
-                    <span>24 796 800 so'm</span>
-                  </div>
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base py-2.5">
-                    Rassrochka orqali buyurtma berish
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-            {/* Tabs Content (moved below main product section) */}
+                  <span className="font-bold text-blue-800 text-base">
+                    2 066 400 so'm
+                  </span>
+                </div>
+                <div className="flex justify-between font-semibold text-base text-gray-900">
+                  <span>Umumiy summa:</span>
+                  <span>24 796 800 so'm</span>
+                </div>
+                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base py-2.5">
+                  Rassrochka orqali buyurtma berish
+                </Button>
+              </CardContent>
+            </Card>
           </div>
-          {/* Related Products */}
         </div>
-        <div className="mb-12 border w-full">
+
+        {/* Related Products */}
+        <div className="mb-12 bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-5">
             O'xshash mahsulotlar
           </h2>
-          <div className="grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
             {relatedProducts.map((product) => (
               <EnhancedProductCard key={product.id} {...product} />
             ))}
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
