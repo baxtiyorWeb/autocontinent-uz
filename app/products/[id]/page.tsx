@@ -13,7 +13,7 @@ import {
   Plus,
   CheckCircle,
   X,
-} from "lucide-react"; // Barcha kerakli ikonalar import qilindi
+} from "lucide-react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer"; // Footer import qilindi
 import { Button } from "@/components/ui/button";
@@ -726,16 +726,6 @@ export default function ProductDetailPage(): JSX.Element {
               </div>
             </div>
 
-            {/* Overview Section */}
-            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                Mahsulotga umumiy nazar
-              </h3>
-              <p className="text-gray-700 leading-relaxed text-sm mb-3">
-                {product.description}
-              </p>
-            </div>
-
             {/* Description Section */}
             <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -746,6 +736,70 @@ export default function ProductDetailPage(): JSX.Element {
               </p>
             </div>
 
+            <div className="lg:col-span-1 lg:hidden min-w-0 ">
+              <Card className="sticky top-6 bg-white  rounded-xl  border border-gray-200">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg font-bold text-gray-900">
+                    Rassrochka to'lovi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center text-gray-700 text-sm">
+                    <span className="font-medium">Oylar:</span>
+                    <div className="flex gap-1.5">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="h-8 px-3 text-sm"
+                      >
+                        6
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3 text-sm bg-transparent"
+                      >
+                        12
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3 text-sm bg-transparent"
+                      >
+                        18
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-md p-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Image
+                        src="/placeholder.svg?height=20&width=20&text=X"
+                        alt="Xazna logo"
+                        width={20}
+                        height={20}
+                        className="rounded-full"
+                      />
+                      <span className="font-semibold text-blue-800 text-sm">
+                        xazna
+                      </span>
+                    </div>
+                    <span className="font-bold text-blue-800 text-base">
+                      2 066 400 so'm
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-base text-gray-900">
+                    <span>Umumiy summa:</span>
+                    <span>24 796 800 so'm</span>
+                  </div>
+                  <Button
+                    onClick={() => (window.location.href = "/checkout")}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base py-2.5"
+                  >
+                    Rassrochka orqali buyurtma berish
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
             {/* Specifications Section */}
             <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -904,7 +958,7 @@ export default function ProductDetailPage(): JSX.Element {
           </div>
 
           {/* Right Column: Installment Payment - Sticky on larger screens */}
-          <div className="lg:col-span-1 min-w-0">
+          <div className="max-sm-xs:hidden lg:col-span-1 min-w-0">
             <Card className="sticky top-6 bg-white p-5 rounded-xl  border border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-bold text-gray-900">
