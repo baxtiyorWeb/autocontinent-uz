@@ -323,7 +323,7 @@ export default function ProductDetailPage(): JSX.Element {
 
         <div className="grid lg:grid-cols-3 gap-6 mb-12">
           {/* Left Column: Product Image and Details */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
+          <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
               {/* Product Title & Actions */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -367,7 +367,7 @@ export default function ProductDetailPage(): JSX.Element {
 
               <div className="grid md:grid-cols-2 gap-5">
                 {/* Image Gallery - Sticky on larger screens */}
-                <div className="relative flex flex-col items-center gap-4 md:sticky md:top-6 self-start">
+                <div className="relative flex flex-col items-center gap-4 md:sticky md:top-6 self-start min-w-0">
                   <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm">
                     <Image
                       src={product.images[selectedImage] || "/placeholder.svg"}
@@ -421,7 +421,7 @@ export default function ProductDetailPage(): JSX.Element {
                 </div>
 
                 {/* Product Options & Details */}
-                <div className="space-y-4">
+                <div className="space-y-4 min-w-0">
                   {product.colors && product.colors.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-2">
@@ -809,7 +809,7 @@ export default function ProductDetailPage(): JSX.Element {
           </div>
 
           {/* Right Column: Installment Payment - Sticky on larger screens */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <Card className="sticky top-6 bg-white p-5 rounded-xl shadow-lg border border-gray-100">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-bold text-gray-900">
