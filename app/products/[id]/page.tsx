@@ -296,18 +296,22 @@ export default function ProductDetailPage(): JSX.Element {
       comments.length || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50  ">
       <Header />
 
-      <main className="container mx-auto px-4 py-6">
-        <Breadcrumb items={breadcrumbItems} />
+     <main className="container border mx-auto px-4 py-6 max-sm-xs:px-0 max-sm-xs:w-[90%] sm:px-2 sm:py-4 xs:px-1 xs:py-3">
+
+        {/* <Breadcrumb
+          items={breadcrumbItems}
+          className="max-sm-xs:text-sm max-sm-xs:flex max-sm-xs:flex-wrap"
+        /> */}
 
         <div className="grid lg:grid-cols-3 gap-6 mb-12">
           {/* Main Product Content */}
-          <div className="lg:col-span-2 bg-white p-5 rounded-xl shadow-lg border border-gray-100">
+          <div className="lg:col-span-2 bg-white  rounded-xl shadow-lg border border-gray-100">
             {/* Product Title & Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-0">
-              <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-900 leading-tight">
+              <h1 className="text-2xl  lg:text-3xl font-extrabold text-gray-900 leading-tight">
                 {product.name}
               </h1>
               <div className="flex items-center gap-3">
@@ -347,29 +351,9 @@ export default function ProductDetailPage(): JSX.Element {
 
             <div className="grid md:grid-cols-2 gap-5">
               {/* Image Gallery */}
-              <div className="relative flex-1 h-[350px]  mt-16 sm-xs:h-[250px] bg-gray-100 rounded-lg  flex items-center justify-center shadow-sm">
-                <div className="flex flex-col gap-2 mr-5">
-                  {product.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`flex-shrink-0 border-2 rounded-md overflow-hidden transition-all duration-300 ${
-                        selectedImage === index
-                          ? "border-primary shadow-sm"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <Image
-                        src={image || "/placeholder.svg"}
-                        alt={`${product.name} ${index + 1}`}
-                        width={70}
-                        height={70}
-                        className="w-16 h-16 object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-                <div className="relative flex-1 h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm">
+              <div className="relative flex flex-col items-center gap-4 mt-16 max-sm-xs:mt-0 sm-xs:mt-0">
+                {/* Modified: Changed to flex-col and added gap */}
+                <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center shadow-sm">
                   <Image
                     src={product.images[selectedImage] || "/placeholder.svg"}
                     alt={product.name}
@@ -398,6 +382,30 @@ export default function ProductDetailPage(): JSX.Element {
                       </Button>
                     </div>
                   )}
+                </div>
+                {/* Thumbnail Images - Moved below the main image and arranged horizontally */}
+                <div className="flex gap-2 justify-center mt-4 overflow-x-auto pb-2">
+                  {" "}
+                  {/* Added justify-center and overflow-x-auto */}
+                  {product.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      className={`flex-shrink-0 border-2 rounded-md overflow-hidden transition-all duration-300 ${
+                        selectedImage === index
+                          ? "border-primary shadow-sm"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${product.name} ${index + 1}`}
+                        width={70}
+                        height={70}
+                        className="w-16 h-16 object-cover"
+                      />
+                    </button>
+                  ))}
                 </div>
               </div>
 
