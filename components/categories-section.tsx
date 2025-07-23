@@ -1,6 +1,7 @@
 import { CategoryCard } from "@/components/ui/category-card";
 import { BrandCard } from "@/components/ui/brand-card";
 import type React from "react";
+import { useEffect } from "react";
 
 interface Category {
   id: number;
@@ -106,7 +107,9 @@ export function CategoriesSection({ title: string }): React.JSX.Element {
     <section className="space-y-8">
       {/* Categories */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Kategoriyalar</h2>
+        <h2 className="text-2xl sm:text-xl xs:text-lg font-bold truncate">
+          Kategoriyalar
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {categories.map((category) => (
             <CategoryCard key={category.id} {...category} />
@@ -116,7 +119,9 @@ export function CategoriesSection({ title: string }): React.JSX.Element {
 
       {/* Car Brands */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Avtomobil brendlari</h2>
+        <h2 className="text-2xl sm:text-xl xs:text-lg font-bold truncate">
+          Avtomobil brendlari
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {carBrands.map((brand) => (
             <BrandCard key={brand.id} {...brand} />

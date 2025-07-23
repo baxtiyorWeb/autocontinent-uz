@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { BrandCard } from "@/components/ui/brand-card"
-import { Button } from "@/components/ui/button"
-import type { JSX } from "react"
+import Link from "next/link";
+import { BrandCard } from "@/components/ui/brand-card";
+import { Button } from "@/components/ui/button";
+import type { JSX } from "react";
 
 interface Brand {
-  id: number
-  name: string
-  logo: string
-  href: string
-  productCount?: number
+  id: number;
+  name: string;
+  logo: string;
+  href: string;
+  productCount?: number;
 }
 
 const carBrands: Brand[] = [
@@ -98,17 +98,22 @@ const carBrands: Brand[] = [
     href: "/categories/lada",
     productCount: 345,
   },
-]
+];
 
 export function BrandGridSection(): JSX.Element {
   // Komponent nomi BrandGridSection ga o'zgartirildi
   return (
     <section>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Avtomobil brendlari</h2>
-        <Link href="/brands">
-          <Button variant="outline">Barchasini ko'rish</Button>
-        </Link>
+        <h2 className="text-2xl sm:text-xl xs:text-lg font-bold truncate">
+          Avtomobil brendlari
+        </h2>
+        <Button
+          variant="outline"
+          className="text-sm xs:text-xs px-3 py-1 xs:px-2 xs:py-0.5 whitespace-nowrap"
+        >
+          Barchasini ko'rish
+        </Button>
       </div>
 
       {/* Slayderdan gridga o'zgartirildi */}
@@ -118,5 +123,5 @@ export function BrandGridSection(): JSX.Element {
         ))}
       </div>
     </section>
-  )
+  );
 }

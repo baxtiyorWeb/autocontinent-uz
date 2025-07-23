@@ -247,20 +247,21 @@ export function EnhancedProductCard({
           </div>
           {/* Add to Cart Button */}
           <Button
-            className={`w-full max-sm-xs:px-10 h-7 xs:h-8 font-semibold text-xs xs:text-sm mt-auto transition-all duration-300 ${
-              // h-7, text-xs qo'shildi
-              inStock
-                ? "bg-gradient-to-r  from-primary via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-primary-foreground shadow-sm hover:shadow-md"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+            className={`w-full h-8 xs:h-9 font-semibold text-xs xs:text-sm mt-auto transition-all duration-300
+    flex items-center justify-center gap-2 text-center
+    ${
+      inStock
+        ? "bg-gradient-to-r from-primary via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-primary-foreground shadow-sm hover:shadow-md"
+        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+    }
+  `}
             disabled={!inStock}
             onClick={onAddToCart}
           >
             {inStock ? (
               <>
-                <ShoppingCart className="h-3.5 w-3.5 mr-1.5 xs:h-4 xs:w-4 xs:mr-2 " />{" "}
-                {/* xs:h-4, xs:w-4, xs:mr-2 qo'shildi */}
-                Savatga qo&apos;shish
+                <ShoppingCart className="w-4 h-4 shrink-0" />
+                <span className="truncate">Savatga </span>
               </>
             ) : (
               "Tugagan"

@@ -170,10 +170,16 @@ export function ProductsSection({
   return (
     <section>
       <div className="flex justify-between items-center mb-6 max-sm-xs:mb-3">
-        <h2 className="text-2xl xs:text-xl  font-bold">{title}</h2>
-        <Link href={`/products?type=${type}`}>
-          <Button variant="outline">Barchasini ko'rish</Button>
-        </Link>
+        <h2 className="text-2xl sm:text-xl xs:text-lg font-bold truncate">
+          {title}
+        </h2>
+
+        <Button
+          variant="outline"
+          className="text-sm xs:text-xs px-3 py-1 xs:px-2 xs:py-0.5 whitespace-nowrap"
+        >
+          Barchasini ko'rish
+        </Button>
       </div>
 
       <div
