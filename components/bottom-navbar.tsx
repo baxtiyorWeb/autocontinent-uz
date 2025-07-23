@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, LayoutGrid, ShoppingCart, Tag, User } from "lucide-react";
@@ -17,7 +16,7 @@ const navItems: NavItem[] = [
   { href: "/", icon: Home, label: "Bosh sahifa" },
   { href: "/catalog", icon: LayoutGrid, label: "Katalog" },
   { href: "/cart", icon: ShoppingCart, label: "Savat" },
-  { href: "/promotions", icon: Tag, label: "Aksiyalar" }, // "Tezkor" o'rniga "Aksiyalar"
+  { href: "/promotions", icon: Tag, label: "Aksiyalar" },
   { href: "/login", icon: User, label: "Profil" },
 ];
 
@@ -25,8 +24,7 @@ export function BottomNavbar(): JSX.Element {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-[0_-4px_6px_-1px_rgb(0_0_0_/_0.1),_0_-2px_4px_-2px_rgb(0_0_0_/_0.06)] sm:block md:hidden h-16">
-
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-[0_-4px_6px_-1px_rgb(0_0_0_/_0.1),_0_-2px_4px_-2px_rgb(0_0_0_/_0.06)] block md:hidden h-16">
       <ul className="grid grid-cols-5 h-full">
         {navItems.map((item) => {
           const isActive =
@@ -38,19 +36,19 @@ export function BottomNavbar(): JSX.Element {
             <li key={item.label} className="flex items-center justify-center">
               <Link
                 href={item.href}
-                className={`flex flex-col items-center justify-center p-1.5 text-xs font-medium transition-colors duration-200 ${
+                className={`flex flex-col items-center justify-center p-1.5 text-[10px] sm:text-xs font-medium transition-colors duration-200 ${
                   isActive
                     ? "text-purple-600"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 <div
-                  className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors duration-200 ${
+                  className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full transition-colors duration-200 ${
                     isActive ? "bg-purple-100" : "group-hover:bg-gray-100"
                   }`}
                 >
                   <item.icon
-                    className={`h-5 w-5 ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
                       isActive ? "text-purple-600" : "text-gray-500"
                     }`}
                   />
