@@ -26,20 +26,12 @@ export default function HomePage(): JSX.Element {
           <div className="hidden sm:block">
             <CategoriesSection title="Kategoriyalar" />
           </div>
-          <div>
+          <div className="lg:hidden max-sm-xs:flex">
             <BrandGridSection />
           </div>
           <ProductsSection
             title="Eng ko'p sotilgan mahsulotlar"
             type="bestselling"
-          />
-          <ProductsSection
-            title="Eng ko'p yoqtirilgan mahsulotlar"
-            type="mostliked"
-          />
-          <ProductsSection
-            title="Tavsiya qilingan mahsulotlar"
-            type="recommended"
           />
         </div>
       </main>

@@ -36,7 +36,7 @@ export function Header(): JSX.Element {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isCompactHeader, setIsCompactHeader] = useState(false);
   const lastScrollY = useRef(0);
-  const scrollThreshold = 50; // Headerning ixcham holatga o'tishi uchun scroll masofasi
+  const scrollThreshold = 200; // Headerning ixcham holatga o'tishi uchun scroll masofasi
 
   const debouncedHandleScroll = useRef(
     debounce(() => {

@@ -18,7 +18,7 @@ interface TelegramBotButtonProps {
  * AvtoKontinent Telegram bot for SMS / code verification.
  */
 export function TelegramBotButton({
-  href = "https://t.me/avtokontinent_bot",
+  href = "https://t.me/avtokontinentuz_bot",
   ariaLabel = "Open Telegram bot",
 }: TelegramBotButtonProps): JSX.Element {
   return (

@@ -1,27 +1,27 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Heart, Star, Play, ShoppingCart } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import type { JSX } from "react"
+import Image from "next/image";
+import Link from "next/link";
+import { Heart, Star, Play, ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import type { JSX } from "react";
 
 interface ProductCardProps {
-  id: number
-  name: string
-  price: number
-  originalPrice?: number
-  image: string
-  rating: number
-  reviewCount: number
-  likeCount: number
-  hasVideo?: boolean
-  brand: string
-  inStock: boolean
-  isLiked?: boolean
-  onLike?: () => void
-  onAddToCart?: () => void
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviewCount: number;
+  likeCount: number;
+  hasVideo?: boolean;
+  brand: string;
+  inStock: boolean;
+  isLiked?: boolean;
+  onLike?: () => void;
+  onAddToCart?: () => void;
 }
 
 export function ProductCard({
@@ -40,7 +40,9 @@ export function ProductCard({
   onLike,
   onAddToCart,
 }: ProductCardProps): JSX.Element {
-  const discountPercent = originalPrice ? Math.round((1 - price / originalPrice) * 100) : 0
+  const discountPercent = originalPrice
+    ? Math.round((1 - price / originalPrice) * 100)
+    : 0;
 
   return (
     <div className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
@@ -58,7 +60,9 @@ export function ProductCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {discountPercent > 0 && (
-            <Badge className="bg-destructive hover:bg-red-600 text-white font-semibold">-{discountPercent}%</Badge>
+            <Badge className="bg-destructive hover:bg-red-600 text-white font-semibold">
+              -{discountPercent}%
+            </Badge>
           )}
           {!inStock && (
             <Badge variant="secondary" className="bg-gray-500 text-white">
@@ -83,19 +87,28 @@ export function ProductCard({
           className="absolute bottom-3 right-3 bg-white/90 hover:bg-white shadow-lg"
           onClick={onLike}
         >
-          <Heart className={`h-4 w-4 ${isLiked ? "fill-destructive text-destructive" : "text-gray-600"}`} />
+          <Heart
+            className={`h-4 w-4 ${
+              isLiked ? "fill-destructive text-destructive" : "text-gray-600"
+            }`}
+          />
         </Button>
       </div>
 
       <div className="p-5">
         <div className="mb-3">
-          <Badge variant="outline" className="text-xs font-medium text-primary border-blue-200">
+          <Badge
+            variant="outline"
+            className="text-xs font-medium text-primary border-blue-200"
+          >
             {brand}
           </Badge>
         </div>
 
         <Link href={`/products/${id}`}>
-          <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2 hover:text-primary transition-colors">{name}</h3>
+          <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2 hover:text-primary transition-colors">
+            {name}
+          </h3>
         </Link>
 
         <div className="flex items-center gap-2 mb-3">
@@ -104,7 +117,9 @@ export function ProductCard({
               <Star
                 key={i}
                 className={`h-3.5 w-3.5 ${
-                  i < Math.floor(rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                  i < Math.floor(rating)
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-300"
                 }`}
               />
             ))}
@@ -118,9 +133,13 @@ export function ProductCard({
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <div className="font-bold text-lg text-gray-900">{price.toLocaleString()} so'm</div>
+            <div className="font-bold text-lg text-gray-900">
+              {price.toLocaleString()} so'm
+            </div>
             {originalPrice && (
-              <div className="text-sm text-gray-500 line-through">{originalPrice.toLocaleString()} so'm</div>
+              <div className="text-sm text-gray-500 line-through">
+                {originalPrice.toLocaleString()} so'm
+              </div>
             )}
           </div>
         </div>
@@ -141,5 +160,5 @@ export function ProductCard({
         </Button>
       </div>
     </div>
-  )
+  );
 }

@@ -187,14 +187,14 @@ export function EnhancedProductCard({
           </div>
           {/* Product Name */}
           <Link href={`/products/${id}`} className="flex-grow">
-            <h3 className="font-semibold text-gray-800 text-xs xs:text-sm leading-tight line-clamp-2 hover:text-primary transition-colors duration-200 min-h-[2.5rem] mb-1">
+            <h3 className="font-semibold max-sm-xs:text-xs text-gray-800 text-xs xs:text-sm leading-tight line-clamp-2 hover:text-primary transition-colors duration-200 min-h-[2.5rem]  max-sm-xs:max-h-[1.5rem] mb-1">
               {" "}
               {/* text-xs qo'shildi */}
               {name}
             </h3>
           </Link>
           {/* Rating and Review Count */}
-          <div className="flex items-center gap-0.5 mb-2">
+          <div className="flex items-center gap-0.5 mb-2  max-sm-xs:mb-1">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -218,9 +218,9 @@ export function EnhancedProductCard({
             {/* xs:text-[10px] qo'shildi */}
           </div>
           {/* Price Information */}
-          <div className="space-y-0.5 mb-3">
+          <div className="space-y-0 mb-3   max-sm-xs:mb-1">
             <div className="flex items-center gap-1">
-              <span className="text-base xs:text-lg font-bold text-gray-900">
+              <span className="text-base max-sm-xs:text-sm xs:text-lg font-bold text-gray-900">
                 {" "}
                 {/* text-base qo'shildi */}
                 {price.toLocaleString()}{" "}

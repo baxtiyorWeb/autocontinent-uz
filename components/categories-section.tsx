@@ -1,108 +1,105 @@
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
 import { CategoryCard } from "@/components/ui/category-card";
 import { BrandCard } from "@/components/ui/brand-card";
-import type React from "react";
-import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast"; // Assuming you have a toast hook
+import api from "@/lib/api";
 
-interface Category {
+// Define interfaces for data directly from the API
+interface ApiCategory {
   id: number;
   name: string;
-  icon: string;
+  image: string; // API field for category image/icon
+  // Assuming API provides a count of products for each category
+  product_count?: number;
+}
+
+interface ApiCategoriesResponse {
   count: number;
-  href: string;
+  next: string | null;
+  previous: string | null;
+  results: ApiCategory[];
 }
 
-interface Brand {
+interface ApiBrand {
   id: number;
   name: string;
-  logo: string;
-  href: string;
+  logo: string; // API field for brand logo
+  // Assuming API provides a count of products for each brand
+  product_count?: number;
 }
 
-const categories: Category[] = [
-  {
-    id: 1,
-    name: "Motor qismlari",
-    icon: "/placeholder.svg?height=60&width=60",
-    count: 1250,
-    href: "/categories/motor-qismlari",
-  },
-  {
-    id: 2,
-    name: "Tormoz tizimi",
-    icon: "/placeholder.svg?height=60&width=60",
-    count: 890,
-    href: "/categories/tormoz-tizimi",
-  },
-  {
-    id: 3,
-    name: "Elektr qismlari",
-    icon: "/placeholder.svg?height=60&width=60",
-    count: 2100,
-    href: "/categories/elektr-qismlari",
-  },
-  {
-    id: 4,
-    name: "Filtrlar",
-    icon: "/placeholder.svg?height=60&width=60",
-    count: 650,
-    href: "/categories/filtrlar",
-  },
-  {
-    id: 5,
-    name: "Yoqilg'i tizimi",
-    icon: "/placeholder.svg?height=60&width=60",
-    count: 780,
-    href: "/categories/yoqilgi-tizimi",
-  },
-  {
-    id: 6,
-    name: "Salon aksessuarlari",
-    icon: "/placeholder.svg?height=60&width=60",
-    count: 450,
-    href: "/categories/salon-aksesuarlari",
-  },
-];
+interface ApiBrandsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ApiBrand[];
+}
 
-const carBrands: Brand[] = [
-  {
-    id: 1,
-    name: "Chevrolet",
-    logo: "/placeholder.svg?height=50&width=80",
-    href: "/categories/chevrolet",
-  },
-  {
-    id: 2,
-    name: "Mercedes-Benz",
-    logo: "/placeholder.svg?height=50&width=80",
-    href: "/categories/mercedes",
-  },
-  {
-    id: 3,
-    name: "BMW",
-    logo: "/placeholder.svg?height=50&width=80",
-    href: "/categories/bmw",
-  },
-  {
-    id: 4,
-    name: "Toyota",
-    logo: "/placeholder.svg?height=50&width=80",
-    href: "/categories/toyota",
-  },
-  {
-    id: 5,
-    name: "Volkswagen",
-    logo: "/placeholder.svg?height=50&width=80",
-    href: "/categories/volkswagen",
-  },
-  {
-    id: 6,
-    name: "Hyundai",
-    logo: "/placeholder.svg?height=50&width=80",
-    href: "/categories/hyundai",
-  },
-];
+export function CategoriesSection({
+  title,
+}: {
+  title: string;
+}): React.JSX.Element {
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [brands, setBrands] = useState<ApiBrand[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingBrands, setLoadingBrands] = useState(true);
+  const { toast } = useToast();
 
-export function CategoriesSection({ title: string }): React.JSX.Element {
+  useEffect(() => {
+    // Fetch Categories
+    const fetchCategoriesData = async () => {
+      try {
+        setLoadingCategories(true);
+        const data = await api.get<ApiCategoriesResponse>("/categories/");
+        if (Array.isArray(data?.data?.results)) {
+          setCategories(data?.data?.results);
+        } else {
+          console.error("API response for categories was not an array:", data);
+          throw new Error(
+            "Invalid response: categories results is not an array."
+          );
+        }
+      } catch (error: any) {
+        toast({
+          title: "Xatolik",
+          description: `Kategoriyalar yuklanmadi: ${error.message}`,
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    // Fetch Brands
+    const fetchBrandsData = async () => {
+      try {
+        setLoadingBrands(true);
+        const data = await api.get<ApiBrandsResponse>("/brands/");
+        if (Array.isArray(data?.data?.results)) {
+          setBrands(data?.data?.results);
+        } else {
+          console.error("API response for brands was not an array:", data);
+          throw new Error("Invalid response: brands results is not an array.");
+        }
+      } catch (error: any) {
+        toast({
+          title: "Xatolik",
+          description: `Brendlar yuklanmadi: ${error.message}`,
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingBrands(false);
+      }
+    };
+
+    fetchCategoriesData();
+    fetchBrandsData();
+  }, [toast]); // Depend on toast if it's stable or memoized, otherwise remove
+
   return (
     <section className="space-y-8">
       {/* Categories */}
@@ -110,11 +107,26 @@ export function CategoriesSection({ title: string }): React.JSX.Element {
         <h2 className="text-2xl sm:text-xl xs:text-lg font-bold truncate">
           Kategoriyalar
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {categories.map((category) => (
-            <CategoryCard key={category.id} {...category} />
-          ))}
-        </div>
+        {loadingCategories ? (
+          <div className="text-center py-8">Kategoriyalar yuklanmoqda...</div>
+        ) : categories.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Kategoriyalar topilmadi.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                id={category.id}
+                name={category.name}
+                icon={category.image} // Mapping API's 'image' to CategoryCard's 'icon'
+                count={category.product_count || 0} // Use product_count if available, otherwise 0
+                href={`/categories/${category.id}`} // Or generate slug if your API provides it
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Car Brands */}
@@ -122,11 +134,26 @@ export function CategoriesSection({ title: string }): React.JSX.Element {
         <h2 className="text-2xl sm:text-xl xs:text-lg font-bold truncate">
           Avtomobil brendlari
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {carBrands.map((brand) => (
-            <BrandCard key={brand.id} {...brand} />
-          ))}
-        </div>
+        {loadingBrands ? (
+          <div className="text-center py-8">Brendlar yuklanmoqda...</div>
+        ) : brands.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Brendlar topilmadi.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {brands.map((brand) => (
+              <BrandCard
+                key={brand.id}
+                id={brand.id}
+                name={brand.name}
+                logo={brand.logo} // Mapping API's 'logo' to BrandCard's 'logo'
+                productCount={brand.product_count} // Use product_count if available
+                href={`/brands/${brand.id}`} // Or generate slug
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

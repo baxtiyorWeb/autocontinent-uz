@@ -1,8 +1,9 @@
 "use client";
 import type React from "react";
-import { type JSX, useState } from "react";
+import { type JSX, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios"; // Import axios
 import {
   Heart,
   Star,
@@ -22,22 +23,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator"; // Separator import qilindi
 import { EnhancedProductCard } from "@/components/ui/enhanced-product-card"; // EnhancedProductCard import qilindi
+import api from "@/lib/api";
+import { useParams } from "next/navigation";
+
+interface ProductImage {
+  image: string;
+}
 
 interface ProductDetail {
   id: number;
   name: string;
-  price: number;
+  price_uzs: number; // Changed from 'price' to 'price_uzs' to match API
+  price_usd: string; // Added 'price_usd' to match API
+  description: string;
+  youtube_link?: string; // Changed from 'videoUrl' to 'youtube_link' to match API
+  images: ProductImage[]; // Array of objects with 'image' key
+  // Properties below are from mock data and might not be in API, keep for now or remove if not needed
   originalPrice?: number;
-  images: string[];
   rating: number;
   reviews: number;
   likes: number;
-  videoUrl?: string;
   brand: string;
   model: string;
   inStock: boolean;
   stockCount: number;
-  description: string;
   specifications: { [key: string]: string };
   compatibility: string[];
   colors?: { name: string; hex: string }[];
@@ -67,21 +76,35 @@ interface RelatedProduct {
   inStock: boolean;
 }
 
-const product: ProductDetail = {
+// --- Mock Data (keep if API doesn't provide all details for now) ---
+const mockProduct: ProductDetail = {
   id: 1,
   name: "Motor yog'i filteri Chevrolet Lacetti 1.6L",
-  price: 45000,
+  price_uzs: 45000,
+  price_usd: "4.00",
   originalPrice: 55000,
   images: [
-    "https://sp-ao.shortpixel.ai/client/to_auto%2Cq_glossy%2Cret_img%2Cw_1024%2Ch_684/https%3A//www.wyotech.edu/wp-content/uploads/2024/10/DirtyAirFilter-1024x684.png",
-    "https://www.take5.com/_next/image/?q=75&url=https%3A%2F%2Fimages.ctfassets.net%2Fv3p61xoag5ig%2F6u6WzKPDO4aTUGSv2VubLs%2F6ec302024a132c7aa2d8703f3d3ccce2%2FAdobeStock_216561912.jpeg&w=1920",
-    "https://scottsauto.com/wp-content/uploads/2024/08/Car-cabin-air-filter.png",
-    "https://www.ebaymotorsblog.com/motors/blog/wp-content/uploads/2023/10/dirty_and_clean_engine_air_filters-2000.jpg",
+    {
+      image:
+        "https://sp-ao.shortpixel.ai/client/to_auto%2Cq_glossy%2Cret_img%2Cw_1024%2Ch_684/https%3A//www.wyotech.edu/wp-content/uploads/2024/10/DirtyAirFilter-1024x684.png",
+    },
+    {
+      image:
+        "https://www.take5.com/_next/image/?q=75&url=https%3A%2F%2Fimages.ctfassets.net%2Fv3p61xoag5ig%2F6u6WzKPDO4aTUGSv2VubLs%2F6ec302024a132c7aa2d8703f3d3ccce2%2FAdobeStock_216561912.jpeg&w=1920",
+    },
+    {
+      image:
+        "https://scottsauto.com/wp-content/uploads/2024/08/Car-cabin-air-filter.png",
+    },
+    {
+      image:
+        "https://www.ebaymotorsblog.com/motors/blog/wp-content/uploads/2023/10/dirty_and_clean_engine_air_filters-2000.jpg",
+    },
   ],
   rating: 4.8,
   reviews: 124,
   likes: 89,
-  videoUrl:
+  youtube_link:
     "https://v.made-in-china.com/ucv/sbr/fb313a53798062bfa37faa9f57ae7e/7a2d91b43910307427653209950811_h264_def.mp4",
   brand: "Chevrolet",
   model: "Lacetti",
@@ -124,13 +147,12 @@ const relatedProducts: RelatedProduct[] = [
     name: "Motor yog'i filteri Chevrolet Lacetti",
     price: 45000,
     originalPrice: 55000,
-    // Prom.uz saytidan olingan rasmga olib boruvchi havola
     image:
       "https://www.prom.uz/_ipx/f_webp/https://devel.prom.uz/upload//products/2023/2/20/2/15-1.PNG",
     rating: 4.8,
     reviewCount: 124,
     likeCount: 89,
-    hasVideo: true,
+    // hasVideo: true, // Removed as it's not in the interface
     brand: "Chevrolet",
     inStock: true,
   },
@@ -138,7 +160,6 @@ const relatedProducts: RelatedProduct[] = [
     id: 2,
     name: "Tormoz kolodkalari Mercedes W205",
     price: 320000,
-    // Bu havola to'g'ridan-to'g'ri rasm emas, tormoz kolodkalari haqida sahifaga olib borishi mumkin.
     image:
       "https://files.glotr.uz/company/000/005/148/products/2018/01/20/15164302157735-060b8bdbc89e007edc8612b2e5b2d0fe.jpg?_=ozb9y",
     rating: 4.9,
@@ -152,13 +173,11 @@ const relatedProducts: RelatedProduct[] = [
     name: "Akkumulyator 60Ah Universal",
     price: 850000,
     originalPrice: 950000,
-    // OLX.uz saytidan olingan rasmga olib boruvchi havola
     image:
       "https://frankfurt.apollo.olxcdn.com/v1/files/gs4spq08t6uu3-UZ/image;s=1000x700",
     rating: 4.7,
     reviewCount: 203,
     likeCount: 234,
-    // hasVideo: true,
     brand: "Universal",
     inStock: false,
   },
@@ -166,7 +185,6 @@ const relatedProducts: RelatedProduct[] = [
     id: 4,
     name: "Spark plug BMW E90",
     price: 25000,
-    // eBay.com saytidan olingan rasmga olib boruvchi havola
     image: "https://i.ebayimg.com/images/g/SGkAAOSw66hmTNah/s-l1600.webp",
     rating: 4.6,
     reviewCount: 89,
@@ -179,7 +197,6 @@ const relatedProducts: RelatedProduct[] = [
     name: "Havo filtri Toyota Camry XV70",
     price: 90000,
     originalPrice: 100000,
-    // Uzum Market saytidan olingan rasmga olib boruvchi havola
     image: "https://images.uzum.uz/cpdgksjmdtjnp737srug/original.jpg",
     rating: 4.5,
     reviewCount: 75,
@@ -191,7 +208,6 @@ const relatedProducts: RelatedProduct[] = [
     id: 6,
     name: "Rul gidravlikasi moyi Lada Granta",
     price: 60000,
-    // Lada Granta rul gidravlikasi moyi uchun umumiy qidiruv havolasi. Aniq rasm topilmadi, shuning uchun siz ushbu sahifalarda o'zingiz mos rasmni topishingiz kerak bo'ladi.
     image:
       "https://files.glotr.uz/company/000/004/377/products/2015/08/24/14404312035167-680d995de4babcd3869231f81b369eac.jpg?_=ozb9y",
     rating: 4.2,
@@ -205,7 +221,6 @@ const relatedProducts: RelatedProduct[] = [
     name: "Shina 205/55 R16 (yozgi)",
     price: 700000,
     originalPrice: 750000,
-    // Sello.uz saytidan olingan shina rasmiga olib boruvchi havola
     image:
       "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20220719/c38cd196-4738-49df-8d6a-aefe51bc4acf.JPEG",
     rating: 4.9,
@@ -218,13 +233,11 @@ const relatedProducts: RelatedProduct[] = [
     id: 8,
     name: "Antifriz (Qizil) 5L",
     price: 120000,
-    // Drivers Shop saytidan olingan rasmga olib boruvchi havola
     image:
       "https://shop.driversvillage.uz/uploads/product/KK/KK/f3/antifriz-krasnyi-5l-g12-40-c-super-yuko-4820070248227-1-6.jpg?cacheimg=77903",
     rating: 4.7,
     reviewCount: 95,
     likeCount: 180,
-    // hasVideo: true,
     brand: "Liqui Moly",
     inStock: true,
   },
@@ -233,7 +246,6 @@ const relatedProducts: RelatedProduct[] = [
     name: "Avtomobil polikchalari GM Cobalt",
     price: 180000,
     originalPrice: 200000,
-    // Sello.uz saytidan olingan avtomobil gilamchalari rasmiga olib boruvchi havola
     image:
       "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20240226/18217fba0e9fac667350ae818f8d0e55.png",
     rating: 4.3,
@@ -246,7 +258,6 @@ const relatedProducts: RelatedProduct[] = [
     id: 10,
     name: "Avtomobil tozalash uchun vositalar to'plami",
     price: 250000,
-    // Ushbu havolada to'plamning o'zi emas, balki avtomobil tozalash vositalari sotiladigan umumiy sahifa bo'lishi mumkin.
     image:
       "https://images2.zoodmall.uz/cdn-cgi/image/w=500,fit=contain,f=auto/https%3A%2F%2Fimages2.zoodmall.com%2Fhttps%253A%2Fimg.joomcdn.net%2F536a3055093bae4f735fb3560bc45645ae8accdf_original.jpeg",
     rating: 4.6,
@@ -319,7 +330,7 @@ const NewReviewRating = ({
     </div>
   );
 };
-// VideoPlayer komponenti
+
 const VideoPlayer = ({
   videoUrl,
   onClose,
@@ -338,22 +349,14 @@ const VideoPlayer = ({
         >
           <X className="h-6 w-6" />
         </Button>
-        {
-          <video
-            controls
-            autoPlay
-            className="w-full h-full object-contain rounded-lg"
-          >
-            <source
-              src={
-                videoUrl ||
-                "https://v.made-in-china.com/ucv/sbr/fb313a53798062bfa37faa9f57ae7e/7a2d91b43910307427653209950811_h264_def.mp4"
-              }
-              type="video/mp4"
-            />
-            Your browser does not support the video tag.
-          </video>
-        }
+        <video
+          controls
+          autoPlay
+          className="w-full h-full object-contain rounded-lg"
+        >
+          <source src={videoUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
     </div>
   );
@@ -379,22 +382,70 @@ const NewReviewComment = ({
 };
 
 export default function ProductDetailPage(): JSX.Element {
+  const [product, setProduct] = useState<ProductDetail | null>(null); // State to store fetched product data
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [newReviewRating, setNewReviewRating] = useState<number>(0);
   const [newReviewComment, setNewReviewComment] = useState<string>("");
-  const [selectedColor, setSelectedColor] = useState<string | null>(
-    product.colors?.[0]?.name || null
-  );
-  const [selectedCapacity, setSelectedCapacity] = useState<string | null>(
-    product.capacities?.[0] || null
-  );
-  const [selectedSimType, setSelectedSimType] = useState<string | null>(
-    product.simTypes?.[0] || null
-  );
-
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedCapacity, setSelectedCapacity] = useState<string | null>(null);
+  const [selectedSimType, setSelectedSimType] = useState<string | null>(null);
   const [showVideo, setShowVideo] = useState(false);
+  const { id } = useParams();
+  // Fetch product data from API
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await api.get<ProductDetail>(`/products/${id}/`); // Fetch product with ID 1
+        // Merge API data with mock data, prioritizing API data where available
+        const fetchedProduct = {
+          ...mockProduct, // Start with mock data
+          ...response.data, // Overlay with API data
+          images: response.data.images || mockProduct.images, // Ensure images array is handled correctly
+          youtube_link: response.data.youtube_link || mockProduct.youtube_link, // Use youtube_link from API or mock
+          price_uzs: response.data.price_uzs, // Use price_uzs from API
+          price_usd: response.data.price_usd, // Use price_usd from API
+          description: response.data.description, // Use description from API
+          name: response.data.name, // Use name from API
+        };
+        setProduct(fetchedProduct);
+        // Initialize selected options based on fetched data or mock data
+        if (fetchedProduct.colors && fetchedProduct.colors.length > 0) {
+          setSelectedColor(fetchedProduct.colors[0].name);
+        }
+        if (fetchedProduct.capacities && fetchedProduct.capacities.length > 0) {
+          setSelectedCapacity(fetchedProduct.capacities[0]);
+        }
+        if (fetchedProduct.simTypes && fetchedProduct.simTypes.length > 0) {
+          setSelectedSimType(fetchedProduct.simTypes[0]);
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        // Fallback to mock data if API call fails
+        setProduct(mockProduct);
+        if (mockProduct.colors && mockProduct.colors.length > 0) {
+          setSelectedColor(mockProduct.colors[0].name);
+        }
+        if (mockProduct.capacities && mockProduct.capacities.length > 0) {
+          setSelectedCapacity(mockProduct.capacities[0]);
+        }
+        if (mockProduct.simTypes && mockProduct.simTypes.length > 0) {
+          setSelectedSimType(mockProduct.simTypes[0]);
+        }
+      }
+    };
+    fetchProduct();
+  }, []); // Empty dependency array means this runs once on mount
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading product details...
+      </div>
+    );
+  }
+
   const breadcrumbItems = [
     { label: "Bosh sahifa", href: "/" },
     { label: "Kategoriyalar", href: "/categories" },
@@ -408,12 +459,10 @@ export default function ProductDetailPage(): JSX.Element {
       alert("Iltimos, baho bering va sharh yozing.");
       return;
     }
-    // Simulate adding a new comment
     console.log("New review submitted:", {
       rating: newReviewRating,
       comment: newReviewComment,
     });
-    // In a real app, you would send this to a backend
     setNewReviewRating(0);
     setNewReviewComment("");
     alert("Sharhingiz qabul qilindi!");
@@ -427,9 +476,6 @@ export default function ProductDetailPage(): JSX.Element {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="container mx-auto px-4 py-6 max-sm-xs:px-0 sm:px-6 lg:px-8">
-        {/* Breadcrumb - keeping it commented out as in original */}
-        {/* <Breadcrumb items={breadcrumbItems} className="mb-4" /> */}
-
         <div className="grid lg:grid-cols-3 gap-6 mb-12">
           {/* Left Column: Product Image and Details */}
           <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
@@ -478,31 +524,27 @@ export default function ProductDetailPage(): JSX.Element {
                 {/* Image Gallery - Sticky on larger screens */}
                 <div className="relative flex flex-col items-center gap-4 md:sticky md:top-6 self-start min-w-0">
                   <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center ">
-                    {
-                      <Image
-                        src={
-                          product.images[selectedImage] ||
-                          "https://image.made-in-china.com/202f0j00BJRWFPVCGAbM/Car-Motores-1-6L-F16D3-Engine-for-Chevrolet-Cruze-Aveo-Optra-Lacetti-Daewoo-Nexia-Lanos-Buick-Excelle.webp"
-                        }
-                        alt={
-                          product.name ||
-                          "https://image.made-in-china.com/202f0j00BJRWFPVCGAbM/Car-Motores-1-6L-F16D3-Engine-for-Chevrolet-Cruze-Aveo-Optra-Lacetti-Daewoo-Nexia-Lanos-Buick-Excelle.webp"
-                        }
-                        fill
-                        className="object-contain"
-                      />
-                    }
+                    <Image
+                      src={
+                        product.images[selectedImage]?.image ||
+                        "/placeholder.svg"
+                      }
+                      alt={product.name}
+                      fill
+                      className="object-contain"
+                    />
                     {product.originalPrice &&
-                      product.price < product.originalPrice && (
+                      product.price_uzs < product.originalPrice && (
                         <Badge className="absolute top-3 left-3 bg-destructive text-white font-bold text-xs px-2 py-0.5">
                           -
                           {Math.round(
-                            (1 - product.price / product.originalPrice) * 100
+                            (1 - product.price_uzs / product.originalPrice) *
+                              100
                           )}
                           % chegirma
                         </Badge>
                       )}
-                    {product.videoUrl && selectedImage === 0 && (
+                    {product.youtube_link && selectedImage === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                         <Button
                           size="sm"
@@ -516,7 +558,7 @@ export default function ProductDetailPage(): JSX.Element {
                     )}
                   </div>
                   <div className="flex gap-2 justify-center mt-4 overflow-x-auto pb-2">
-                    {product.images.map((image, index) => (
+                    {product.images.map((img, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImage(index)}
@@ -527,7 +569,7 @@ export default function ProductDetailPage(): JSX.Element {
                         }`}
                       >
                         <Image
-                          src={image || "/placeholder.svg"}
+                          src={img.image || "/placeholder.svg"}
                           alt={`${product.name} ${index + 1}`}
                           width={70}
                           height={70}
@@ -637,7 +679,7 @@ export default function ProductDetailPage(): JSX.Element {
                   <div className="space-y-3">
                     <div className="flex items-baseline gap-3">
                       <span className="text-2xl font-bold text-gray-900">
-                        {product.price.toLocaleString()} so'm
+                        {product.price_uzs.toLocaleString()} so'm
                       </span>
                       {product.originalPrice && (
                         <span className="text-lg text-gray-500 line-through">
@@ -1044,9 +1086,9 @@ export default function ProductDetailPage(): JSX.Element {
         </div>
       </main>
       <Footer />
-      {showVideo && product.videoUrl && (
+      {showVideo && product.youtube_link && (
         <VideoPlayer
-          videoUrl={product.videoUrl}
+          videoUrl={product.youtube_link}
           onClose={() => setShowVideo(false)}
         />
       )}
