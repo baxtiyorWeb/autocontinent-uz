@@ -25,20 +25,23 @@ export function BrandCard({
         {/* Content */}
         <div className="relative p-3 text-center space-y-2">
           {/* Logo container */}
-          <div className="relative mx-auto h-16 flex items-center justify-center rounded-xl bg-gray-50 group-hover:bg-gray-100 transition-colors duration-300">
+          <div className="relative mx-auto h-full w-full flex items-center justify-center rounded-xl  transition-colors duration-300">
             <Image
-              src={logo || "https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg"}
+              src={
+                logo ||
+                "https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg"
+              }
               alt={name}
-              width={50} // Kichiklashtirildi
-              height={30} // Kichiklashtirildi
-              className="object-contain group-hover:scale-105 transition-transform duration-300 max-h-10" // Max-height kamaytirildi
+              width={100}
+              height={60}
+              className="object-contain group-hover:scale-105 transition-transform duration-300 max-h-32 max-w-full"
             />
           </div>
           {/* Brand name */}
           <h3 className="font-semibold text-gray-900 text-sm leading-tight group-hover:text-primary transition-colors duration-200 line-clamp-2 min-h-[2.5rem]">
             {name}
           </h3>
-          {/* Product count if provided (kept for data, but not explicitly visible in image) */}
+          {/* Product count if provided */}
           {productCount && (
             <p className="text-xs text-gray-600 group-hover:text-gray-700 transition-colors duration-200">
               {productCount.toLocaleString()} mahsulot

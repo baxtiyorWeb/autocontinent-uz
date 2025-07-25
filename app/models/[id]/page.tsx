@@ -96,7 +96,7 @@ export default function ModelsPage(): JSX.Element {
                 // Har bir model o'zining kategoriyalariga emas, balki
                 // o'ziga mos mahsulotlar sahifasiga yo'naltirishi kerak
                 // Masalan: `/models/${model.id}/products` yoki shunga o'xshash
-                href={`/categories/${model.id}`} // Kategoriya emas, mahsulotlar sahifasiga yo'naltirish
+                href={`/models/${brandId}/${model.id}`} // Kategoriya emas, mahsulotlar sahifasiga yo'naltirish
                 productCount={model.products?.length || 0} // Mahsulotlar sonini API javobidan olish
               />
             ))}
