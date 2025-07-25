@@ -1,8 +1,8 @@
 // app/checkout/CheckoutClientComponent.tsx
-"use client";
+"use client"; // Bu direktiva juda muhim! Bu faylni Client Component deb belgilaydi.
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation"; // Endi bu hook Client Component ichida
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
@@ -16,7 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
-// CartItem interfeysi
 interface CartItem {
   id: number;
   name: string;
@@ -26,7 +25,6 @@ interface CartItem {
   brand: string;
 }
 
-// VAQTINCHA: Real Cart uchun siz bu qismni API'dan o'qishingiz yoki Context'dan olishingiz kerak
 const initialCartItems: CartItem[] = [
   {
     id: 1,
@@ -75,9 +73,8 @@ export default function CheckoutClientComponent(): React.JSX.Element {
   });
 
   const { toast } = useToast();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); // << useSearchParams endi shu yerda
 
-  // URL'dan productId va quantity ni olish
   const urlProductId = searchParams.get("productId");
   const urlQuantity = searchParams.get("quantity");
 
@@ -116,7 +113,6 @@ export default function CheckoutClientComponent(): React.JSX.Element {
         description: "Mahsulot ma'lumotlari URL'da topilmadi.",
         variant: "destructive",
       });
-      // Optionally redirect or show an error state
     }
   }, [urlProductId, urlQuantity, toast]);
 
@@ -253,7 +249,6 @@ export default function CheckoutClientComponent(): React.JSX.Element {
             </div>
           </div>
         </div>
-        {/* <Footer /> - Footer should be handled by the parent layout or page */}
       </div>
     );
   }
@@ -291,7 +286,6 @@ export default function CheckoutClientComponent(): React.JSX.Element {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Link href="/cart" className="text-gray-600 hover:text-gray-900">
               <ArrowLeft className="h-5 w-5" />
@@ -301,7 +295,6 @@ export default function CheckoutClientComponent(): React.JSX.Element {
             </h1>
           </div>
 
-          {/* Progress Steps */}
           <div className="flex items-center justify-center mb-8 flex-wrap gap-y-4">
             <div className="flex items-center gap-2">
               <div
@@ -349,7 +342,6 @@ export default function CheckoutClientComponent(): React.JSX.Element {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Content */}
             <div className="lg:col-span-2 min-w-0">
               {step === "details" && (
                 <Card className="rounded-xl shadow-none border border-gray-200">
@@ -371,9 +363,7 @@ export default function CheckoutClientComponent(): React.JSX.Element {
                           <Input
                             id="fullName"
                             value={customerInfo.fullName}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) =>
+                            onChange={(e) =>
                               setCustomerInfo({
                                 ...customerInfo,
                                 fullName: e.target.value,
@@ -394,9 +384,7 @@ export default function CheckoutClientComponent(): React.JSX.Element {
                             id="phone"
                             type="tel"
                             value={customerInfo.phone}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) =>
+                            onChange={(e) =>
                               setCustomerInfo({
                                 ...customerInfo,
                                 phone: e.target.value,
@@ -417,9 +405,7 @@ export default function CheckoutClientComponent(): React.JSX.Element {
                         <Textarea
                           id="address"
                           value={customerInfo.address}
-                          onChange={(
-                            e: React.ChangeEvent<HTMLTextAreaElement>
-                          ) =>
+                          onChange={(e) =>
                             setCustomerInfo({
                               ...customerInfo,
                               address: e.target.value,
@@ -440,9 +426,7 @@ export default function CheckoutClientComponent(): React.JSX.Element {
                         <Textarea
                           id="notes"
                           value={customerInfo.notes}
-                          onChange={(
-                            e: React.ChangeEvent<HTMLTextAreaElement>
-                          ) =>
+                          onChange={(e) =>
                             setCustomerInfo({
                               ...customerInfo,
                               notes: e.target.value,
@@ -517,9 +501,7 @@ export default function CheckoutClientComponent(): React.JSX.Element {
                           <Checkbox
                             id="terms"
                             checked={acceptedTerms}
-                            onCheckedChange={(checked: boolean) =>
-                              setAcceptedTerms(checked)
-                            }
+                            onCheckedChange={setAcceptedTerms}
                           />
                           <label
                             htmlFor="terms"
@@ -557,7 +539,6 @@ export default function CheckoutClientComponent(): React.JSX.Element {
               )}
             </div>
 
-            {/* Order Summary */}
             <div className="lg:col-span-1 min-w-0">
               <Card className="lg:sticky lg:top-24 rounded-xl shadow-none border border-gray-200">
                 <CardContent className="p-4 sm:p-6 space-y-4">
@@ -613,7 +594,7 @@ export default function CheckoutClientComponent(): React.JSX.Element {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-700">Yetkazib berish:</span>
+                      <span className="text-700">Yetkazib berish:</span>
                       <span
                         className={`font-medium ${
                           deliveryFee === 0 ? "text-green-600" : "text-gray-900"
@@ -642,7 +623,6 @@ export default function CheckoutClientComponent(): React.JSX.Element {
           </div>
         </div>
       </div>
-      {/* <Footer /> - Footer should be handled by the parent layout or page */}
     </div>
   );
 }
