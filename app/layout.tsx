@@ -7,9 +7,9 @@ import { JSX } from "react";
 import { Toaster } from "@/components/ui/toaster"; // <-- Toaster komponentini import qiling
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.dev",
+  title: "AvtoKontinent.uz",
+  description: "AvtoKontinent uz saytiga hush kelibsiz",
+  generator: "AvtoKontinent",
 };
 
 export default function RootLayout({
