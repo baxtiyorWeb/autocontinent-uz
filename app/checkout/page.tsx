@@ -1,11 +1,11 @@
+// app/checkout/CheckoutClientComponent.tsx
 "use client";
-import type React from "react";
-import { useState, useEffect } from "react"; // useEffect ni ham qo'shdik agar kerak bo'lsa
+
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,9 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { useSearchParams } from "next/navigation"; // <-- YANGI: useSearchParams import qilindi
 
-// CartItem interfeysi hozircha faqat Order Summary uchun ishlatiladi
+// CartItem interfeysi
 interface CartItem {
   id: number;
   name: string;
@@ -28,10 +27,6 @@ interface CartItem {
 }
 
 // VAQTINCHA: Real Cart uchun siz bu qismni API'dan o'qishingiz yoki Context'dan olishingiz kerak
-// Hozircha mavjud cartItems'ni ishlatamiz
-// Agar siz faqat URL'dan kelgan 1 ta mahsulotni sotib olmoqchi bo'lsangiz, bu arrayga ehtiyoj qolmaydi
-// yoki faqat bitta mahsulotni dinamik ravishda to'ldirish kerak bo'ladi.
-// Hozircha Order Summary qismi uchun saqlab qolamiz.
 const initialCartItems: CartItem[] = [
   {
     id: 1,
@@ -58,7 +53,6 @@ interface CustomerInfo {
   notes: string;
 }
 
-// OrderPayload backend kutganidek
 interface OrderPayload {
   full_name: string;
   address: string;
@@ -68,7 +62,7 @@ interface OrderPayload {
   notes?: string;
 }
 
-export default function CheckoutPage(): React.JSX.Element {
+export default function CheckoutClientComponent(): React.JSX.Element {
   const [step, setStep] = useState<"details" | "payment" | "success">(
     "details"
   );
@@ -81,23 +75,20 @@ export default function CheckoutPage(): React.JSX.Element {
   });
 
   const { toast } = useToast();
-  const searchParams = useSearchParams(); // <-- YANGI: URL parametrlari olindi
+  const searchParams = useSearchParams();
 
   // URL'dan productId va quantity ni olish
   const urlProductId = searchParams.get("productId");
   const urlQuantity = searchParams.get("quantity");
 
-  // Order Summary uchun, URL'dan kelgan mahsulotni topamiz yoki placeholder ishlatamiz
-  // Bu qism real proyektda API orqali mahsulot ma'lumotlarini yuklashi kerak
   const [checkoutProduct, setCheckoutProduct] = useState<CartItem | null>(null);
+  const [isLoadingProduct, setIsLoadingProduct] = useState<boolean>(true);
 
   useEffect(() => {
     if (urlProductId && urlQuantity) {
       const parsedProductId = parseInt(urlProductId, 10);
       const parsedQuantity = parseInt(urlQuantity, 10);
 
-      // Bu yerda siz haqiqiy mahsulot ma'lumotlarini backend'dan olishingiz kerak
-      // Hozircha faqat `initialCartItems` dan topishga harakat qilamiz
       const foundProduct = initialCartItems.find(
         (item) => item.id === parsedProductId
       );
@@ -105,33 +96,30 @@ export default function CheckoutPage(): React.JSX.Element {
       if (foundProduct) {
         setCheckoutProduct({
           ...foundProduct,
-          quantity: parsedQuantity, // URL'dan kelgan miqdorni ishlatamiz
+          quantity: parsedQuantity,
         });
       } else {
-        // Agar topilmasa, minimal ma'lumotlar bilan default mahsulot yaratish
         setCheckoutProduct({
           id: parsedProductId,
-          name: "Noma'lum mahsulot", // Agar mahsulot topilmasa
-          price: 0, // Agar mahsulot topilmasa
+          name: "Noma'lum mahsulot",
+          price: 0,
           quantity: parsedQuantity,
           image: "/placeholder.svg?height=80&width=80",
           brand: "Noma'lum",
         });
       }
+      setIsLoadingProduct(false);
     } else {
-      // Agar URLda productId/quantity bo'lmasa, savatdagi barcha narsalarni ko'rsatamiz
-      // Yoki xato beramiz, qaysi ssenariy sizga mos bo'lsa
-      setCheckoutProduct(null); // Yoki initialCartItems[0]
+      setIsLoadingProduct(false);
       toast({
         title: "Xato",
         description: "Mahsulot ma'lumotlari URL'da topilmadi.",
         variant: "destructive",
       });
-      // setStep("error_page_or_redirect"); // Foydalanuvchini boshqa sahifaga yo'naltirish
+      // Optionally redirect or show an error state
     }
-  }, [urlProductId, urlQuantity, toast]); // urlProductId va urlQuantity o'zgarganda ishlaydi
+  }, [urlProductId, urlQuantity, toast]);
 
-  // Bitta mahsulot uchun umumiy narxlar
   const subtotal = checkoutProduct
     ? checkoutProduct.price * checkoutProduct.quantity
     : 0;
@@ -173,7 +161,6 @@ export default function CheckoutPage(): React.JSX.Element {
       return;
     }
 
-    // URL'dan kelgan product_id va quantity ni tekshirish
     if (!urlProductId || !urlQuantity) {
       toast({
         title: "Xato",
@@ -187,7 +174,6 @@ export default function CheckoutPage(): React.JSX.Element {
     const productIdToSend = parseInt(urlProductId, 10);
     const quantityToSend = parseInt(urlQuantity, 10);
 
-    // Agar `parseInt` xato qiymat qaytarsa (masalan, NaN)
     if (isNaN(productIdToSend) || isNaN(quantityToSend)) {
       toast({
         title: "Xato",
@@ -201,8 +187,8 @@ export default function CheckoutPage(): React.JSX.Element {
       full_name: customerInfo.fullName,
       address: customerInfo.address,
       phone_number: customerInfo.phone,
-      product_id: productIdToSend, // <-- URL'dan olingan product_id ishlatildi
-      quantity: quantityToSend, // <-- URL'dan olingan quantity ishlatildi
+      product_id: productIdToSend,
+      quantity: quantityToSend,
     };
 
     if (customerInfo.notes) {
@@ -267,24 +253,22 @@ export default function CheckoutPage(): React.JSX.Element {
             </div>
           </div>
         </div>
-        <Footer />
+        {/* <Footer /> - Footer should be handled by the parent layout or page */}
       </div>
     );
   }
 
-  // Agar checkoutProduct hali yuklanmagan bo'lsa, loading yoki xato holatini ko'rsatish
-  if (!checkoutProduct && (urlProductId || urlQuantity)) {
+  if (isLoadingProduct) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-lg text-gray-700">
-          Mahsulot ma'lumotlari yuklanmoqda yoki topilmadi...
+          Mahsulot ma'lumotlari yuklanmoqda...
         </p>
       </div>
     );
   }
 
-  // Agar URL'da productId va quantity bo'lmasa va checkoutProduct yuklanmagan bo'lsa
-  if (!urlProductId || !urlQuantity || !checkoutProduct) {
+  if (!checkoutProduct) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -337,8 +321,7 @@ export default function CheckoutPage(): React.JSX.Element {
                 Ma'lumotlar
               </span>
             </div>
-            <div className="flex-1 h-px bg-gray-300 mx-4 min-w-[30px]"></div>{" "}
-            {/* Responsive separator */}
+            <div className="flex-1 h-px bg-gray-300 mx-4 min-w-[30px]"></div>
             <div className="flex items-center gap-2">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -581,7 +564,7 @@ export default function CheckoutPage(): React.JSX.Element {
                   <h2 className="text-xl font-bold text-gray-900 mb-3">
                     Buyurtma xulosasi
                   </h2>
-                  {checkoutProduct ? ( // Faqat bitta mahsulotni ko'rsatamiz
+                  {checkoutProduct ? (
                     <div
                       key={checkoutProduct.id}
                       className="flex gap-3 items-center"
@@ -659,7 +642,7 @@ export default function CheckoutPage(): React.JSX.Element {
           </div>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> - Footer should be handled by the parent layout or page */}
     </div>
   );
 }
