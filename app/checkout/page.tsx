@@ -2,7 +2,7 @@
 "use client"; // Bu direktiva juda muhim! Bu faylni Client Component deb belgilaydi.
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation"; // << useSearchParams endi shu yerda
+// import { useSearchParams } from "next/navigation"; // << useSearchParams importini olib tashlaymiz
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
@@ -60,7 +60,6 @@ interface OrderPayload {
   notes?: string;
 }
 
-// Bu sizning asosiy client komponentingiz
 export default function CheckoutForm(): React.JSX.Element {
   const [step, setStep] = useState<"details" | "payment" | "success">(
     "details"
@@ -74,48 +73,60 @@ export default function CheckoutForm(): React.JSX.Element {
   });
 
   const { toast } = useToast();
-  const searchParams = useSearchParams(); // << useSearchParams endi shu yerda joylashgan
 
-  const urlProductId = searchParams.get("productId");
-  const urlQuantity = searchParams.get("quantity");
+  // useSearchParams o'rniga endi bu yerda window.URLSearchParams ishlatamiz
+  // Bu qiymatlarni useEffect ichida olamiz, chunki `window` faqat brauzerda mavjud.
+  const [urlProductId, setUrlProductId] = useState<string | null>(null);
+  const [urlQuantity, setUrlQuantity] = useState<string | null>(null);
 
   const [checkoutProduct, setCheckoutProduct] = useState<CartItem | null>(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState<boolean>(true);
 
   useEffect(() => {
-    if (urlProductId && urlQuantity) {
-      const parsedProductId = parseInt(urlProductId, 10);
-      const parsedQuantity = parseInt(urlQuantity, 10);
+    // window obyektining mavjudligini tekshiramiz
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const productId = searchParams.get("productId");
+      const quantity = searchParams.get("quantity");
 
-      const foundProduct = initialCartItems.find(
-        (item) => item.id === parsedProductId
-      );
+      setUrlProductId(productId);
+      setUrlQuantity(quantity);
 
-      if (foundProduct) {
-        setCheckoutProduct({
-          ...foundProduct,
-          quantity: parsedQuantity,
-        });
+      if (productId && quantity) {
+        const parsedProductId = parseInt(productId, 10);
+        const parsedQuantity = parseInt(quantity, 10);
+
+        const foundProduct = initialCartItems.find(
+          (item) => item.id === parsedProductId
+        );
+
+        if (foundProduct) {
+          setCheckoutProduct({
+            ...foundProduct,
+            quantity: parsedQuantity,
+          });
+        } else {
+          // Agar mahsulot topilmasa, default qiymat bilan yaratamiz
+          setCheckoutProduct({
+            id: parsedProductId,
+            name: "Noma'lum mahsulot",
+            price: 0,
+            quantity: parsedQuantity,
+            image: "/placeholder.svg?height=80&width=80",
+            brand: "Noma'lum",
+          });
+        }
+        setIsLoadingProduct(false);
       } else {
-        setCheckoutProduct({
-          id: parsedProductId,
-          name: "Noma'lum mahsulot",
-          price: 0,
-          quantity: parsedQuantity,
-          image: "/placeholder.svg?height=80&width=80",
-          brand: "Noma'lum",
+        setIsLoadingProduct(false);
+        toast({
+          title: "Xato",
+          description: "Mahsulot ma'lumotlari URL'da topilmadi.",
+          variant: "destructive",
         });
       }
-      setIsLoadingProduct(false);
-    } else {
-      setIsLoadingProduct(false);
-      toast({
-        title: "Xato",
-        description: "Mahsulot ma'lumotlari URL'da topilmadi.",
-        variant: "destructive",
-      });
     }
-  }, [urlProductId, urlQuantity, toast]);
+  }, [toast]); // useEffect faqat bir marta ishga tushishi uchun bo'sh array beramiz
 
   const subtotal = checkoutProduct
     ? checkoutProduct.price * checkoutProduct.quantity
