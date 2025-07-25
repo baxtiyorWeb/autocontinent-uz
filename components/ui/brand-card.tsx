@@ -27,7 +27,7 @@ export function BrandCard({
           {/* Logo container */}
           <div className="relative mx-auto h-16 flex items-center justify-center rounded-xl bg-gray-50 group-hover:bg-gray-100 transition-colors duration-300">
             <Image
-              src={logo || "/placeholder.svg"}
+              src={logo || "https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg"}
               alt={name}
               width={50} // Kichiklashtirildi
               height={30} // Kichiklashtirildi

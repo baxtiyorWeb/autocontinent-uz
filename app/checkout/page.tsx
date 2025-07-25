@@ -1,15 +1,9 @@
 "use client";
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // useEffect ni ham qo'shdik agar kerak bo'lsa
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowLeft,
-  CreditCard,
-  Upload,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { ArrowLeft, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -19,7 +13,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import api from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+import { useSearchParams } from "next/navigation"; // <-- YANGI: useSearchParams import qilindi
 
+// CartItem interfeysi hozircha faqat Order Summary uchun ishlatiladi
 interface CartItem {
   id: number;
   name: string;
@@ -29,7 +27,12 @@ interface CartItem {
   brand: string;
 }
 
-const cartItems: CartItem[] = [
+// VAQTINCHA: Real Cart uchun siz bu qismni API'dan o'qishingiz yoki Context'dan olishingiz kerak
+// Hozircha mavjud cartItems'ni ishlatamiz
+// Agar siz faqat URL'dan kelgan 1 ta mahsulotni sotib olmoqchi bo'lsangiz, bu arrayga ehtiyoj qolmaydi
+// yoki faqat bitta mahsulotni dinamik ravishda to'ldirish kerak bo'ladi.
+// Hozircha Order Summary qismi uchun saqlab qolamiz.
+const initialCartItems: CartItem[] = [
   {
     id: 1,
     name: "Motor yog'i filteri Chevrolet Lacetti",
@@ -55,12 +58,21 @@ interface CustomerInfo {
   notes: string;
 }
 
-export default function CheckoutPage(): JSX.Element {
+// OrderPayload backend kutganidek
+interface OrderPayload {
+  full_name: string;
+  address: string;
+  phone_number: string;
+  product_id: number;
+  quantity: number;
+  notes?: string;
+}
+
+export default function CheckoutPage(): React.JSX.Element {
   const [step, setStep] = useState<"details" | "payment" | "success">(
     "details"
   );
   const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
-  const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     fullName: "",
     phone: "",
@@ -68,10 +80,61 @@ export default function CheckoutPage(): JSX.Element {
     notes: "",
   });
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const { toast } = useToast();
+  const searchParams = useSearchParams(); // <-- YANGI: URL parametrlari olindi
+
+  // URL'dan productId va quantity ni olish
+  const urlProductId = searchParams.get("productId");
+  const urlQuantity = searchParams.get("quantity");
+
+  // Order Summary uchun, URL'dan kelgan mahsulotni topamiz yoki placeholder ishlatamiz
+  // Bu qism real proyektda API orqali mahsulot ma'lumotlarini yuklashi kerak
+  const [checkoutProduct, setCheckoutProduct] = useState<CartItem | null>(null);
+
+  useEffect(() => {
+    if (urlProductId && urlQuantity) {
+      const parsedProductId = parseInt(urlProductId, 10);
+      const parsedQuantity = parseInt(urlQuantity, 10);
+
+      // Bu yerda siz haqiqiy mahsulot ma'lumotlarini backend'dan olishingiz kerak
+      // Hozircha faqat `initialCartItems` dan topishga harakat qilamiz
+      const foundProduct = initialCartItems.find(
+        (item) => item.id === parsedProductId
+      );
+
+      if (foundProduct) {
+        setCheckoutProduct({
+          ...foundProduct,
+          quantity: parsedQuantity, // URL'dan kelgan miqdorni ishlatamiz
+        });
+      } else {
+        // Agar topilmasa, minimal ma'lumotlar bilan default mahsulot yaratish
+        setCheckoutProduct({
+          id: parsedProductId,
+          name: "Noma'lum mahsulot", // Agar mahsulot topilmasa
+          price: 0, // Agar mahsulot topilmasa
+          quantity: parsedQuantity,
+          image: "/placeholder.svg?height=80&width=80",
+          brand: "Noma'lum",
+        });
+      }
+    } else {
+      // Agar URLda productId/quantity bo'lmasa, savatdagi barcha narsalarni ko'rsatamiz
+      // Yoki xato beramiz, qaysi ssenariy sizga mos bo'lsa
+      setCheckoutProduct(null); // Yoki initialCartItems[0]
+      toast({
+        title: "Xato",
+        description: "Mahsulot ma'lumotlari URL'da topilmadi.",
+        variant: "destructive",
+      });
+      // setStep("error_page_or_redirect"); // Foydalanuvchini boshqa sahifaga yo'naltirish
+    }
+  }, [urlProductId, urlQuantity, toast]); // urlProductId va urlQuantity o'zgarganda ishlaydi
+
+  // Bitta mahsulot uchun umumiy narxlar
+  const subtotal = checkoutProduct
+    ? checkoutProduct.price * checkoutProduct.quantity
+    : 0;
   const deliveryFee = subtotal >= 500000 ? 0 : 25000;
   const total = subtotal + deliveryFee;
 
@@ -80,18 +143,95 @@ export default function CheckoutPage(): JSX.Element {
 
   const handleDetailsSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
+    if (
+      !customerInfo.fullName ||
+      !customerInfo.phone ||
+      !customerInfo.address
+    ) {
+      toast({
+        title: "Xato",
+        description: "Barcha majburiy ma'lumotlarni to'ldiring.",
+        variant: "destructive",
+      });
+      return;
+    }
     setStep("payment");
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  const handlePaymentSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
-    setStep("success");
-  };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPaymentProof(file);
+    if (!acceptedTerms) {
+      toast({
+        title: "Xato",
+        description:
+          "Foydalanish shartlari va maxfiylik siyosatiga rozi bo'lishingiz kerak.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // URL'dan kelgan product_id va quantity ni tekshirish
+    if (!urlProductId || !urlQuantity) {
+      toast({
+        title: "Xato",
+        description:
+          "Mahsulot IDsi yoki miqdori topilmadi. Sahifani yangilang.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const productIdToSend = parseInt(urlProductId, 10);
+    const quantityToSend = parseInt(urlQuantity, 10);
+
+    // Agar `parseInt` xato qiymat qaytarsa (masalan, NaN)
+    if (isNaN(productIdToSend) || isNaN(quantityToSend)) {
+      toast({
+        title: "Xato",
+        description: "Mahsulot IDsi yoki miqdori noto'g'ri formatda.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const orderData: OrderPayload = {
+      full_name: customerInfo.fullName,
+      address: customerInfo.address,
+      phone_number: customerInfo.phone,
+      product_id: productIdToSend, // <-- URL'dan olingan product_id ishlatildi
+      quantity: quantityToSend, // <-- URL'dan olingan quantity ishlatildi
+    };
+
+    if (customerInfo.notes) {
+      orderData.notes = customerInfo.notes;
+    }
+
+    try {
+      const response = await api.post("/orders/", orderData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Buyurtma muvaffaqiyatli yuborildi:", response.data);
+      toast({
+        title: "Muvaffaqiyatli",
+        description: "Buyurtmangiz muvaffaqiyatli qabul qilindi!",
+        variant: "default",
+      });
+      setStep("success");
+    } catch (error: any) {
+      console.error("Buyurtma yuborishda xatolik yuz berdi:", error);
+      toast({
+        title: "Xato",
+        description: `Buyurtma yuborishda xatolik yuz berdi: ${
+          error.response?.data?.detail || error.message
+        }`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -132,9 +272,39 @@ export default function CheckoutPage(): JSX.Element {
     );
   }
 
+  // Agar checkoutProduct hali yuklanmagan bo'lsa, loading yoki xato holatini ko'rsatish
+  if (!checkoutProduct && (urlProductId || urlQuantity)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-lg text-gray-700">
+          Mahsulot ma'lumotlari yuklanmoqda yoki topilmadi...
+        </p>
+      </div>
+    );
+  }
+
+  // Agar URL'da productId va quantity bo'lmasa va checkoutProduct yuklanmagan bo'lsa
+  if (!urlProductId || !urlQuantity || !checkoutProduct) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Xato: Mahsulot ma'lumotlari mavjud emas
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Iltimos, mahsulot sahifasidan qayta urinib ko'ring.
+          </p>
+          <Button asChild className="bg-primary">
+            <Link href="/">Bosh sahifaga qaytish</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Header /> */}
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -351,7 +521,6 @@ export default function CheckoutPage(): JSX.Element {
                           </h4>
                           <ol className="text-sm text-amber-700 space-y-1 list-decimal pl-4">
                             <li>Yuqoridagi karta raqamiga to'lov qiling</li>
-                            <li>To'lov chekini yoki skrinshotini yuklang</li>
                             <li>Buyurtmani tasdiqlang</li>
                           </ol>
                         </div>
@@ -361,38 +530,6 @@ export default function CheckoutPage(): JSX.Element {
                         onSubmit={handlePaymentSubmit}
                         className="space-y-6"
                       >
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            To'lov cheki yoki skrinshotini yuklang
-                          </label>
-                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleFileUpload}
-                              className="hidden"
-                              id="payment-proof"
-                              required
-                            />
-                            <label
-                              htmlFor="payment-proof"
-                              className="block cursor-pointer"
-                            >
-                              <Upload className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-                              <p className="text-sm text-gray-600">
-                                {paymentProof
-                                  ? paymentProof.name
-                                  : "Rasm yuklash uchun bosing yoki tortib tashlang"}
-                              </p>
-                              {paymentProof && (
-                                <p className="text-xs text-green-600 mt-1">
-                                  Fayl yuklandi: {paymentProof.name}
-                                </p>
-                              )}
-                            </label>
-                          </div>
-                        </div>
-
                         <div className="flex items-start space-x-2">
                           <Checkbox
                             id="terms"
@@ -426,7 +563,7 @@ export default function CheckoutPage(): JSX.Element {
                         <Button
                           type="submit"
                           className="w-full h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                          disabled={!acceptedTerms || !paymentProof}
+                          disabled={!acceptedTerms}
                         >
                           Buyurtmani tasdiqlash
                         </Button>
@@ -444,36 +581,46 @@ export default function CheckoutPage(): JSX.Element {
                   <h2 className="text-xl font-bold text-gray-900 mb-3">
                     Buyurtma xulosasi
                   </h2>
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-3 items-center">
+                  {checkoutProduct ? ( // Faqat bitta mahsulotni ko'rsatamiz
+                    <div
+                      key={checkoutProduct.id}
+                      className="flex gap-3 items-center"
+                    >
                       <Image
-                        src={item.image || "/placeholder.svg"}
-                        alt={item.name}
+                        src={checkoutProduct.image || "/placeholder.svg"}
+                        alt={checkoutProduct.name}
                         width={70}
                         height={70}
                         className="rounded-lg object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-base line-clamp-2 text-gray-900">
-                          {item.name}
+                          {checkoutProduct.name}
                         </h4>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge
                             variant="outline"
                             className="text-xs px-2 py-0.5"
                           >
-                            {item.brand}
+                            {checkoutProduct.brand}
                           </Badge>
                           <span className="text-sm text-gray-500">
-                            ×{item.quantity}
+                            ×{checkoutProduct.quantity}
                           </span>
                         </div>
                         <p className="font-semibold text-base mt-1 text-gray-900">
-                          {(item.price * item.quantity).toLocaleString()} so'm
+                          {(
+                            checkoutProduct.price * checkoutProduct.quantity
+                          ).toLocaleString()}{" "}
+                          so'm
                         </p>
                       </div>
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-gray-500">
+                      Mahsulot ma'lumotlari mavjud emas.
+                    </p>
+                  )}
                   <Separator />
                   <div className="space-y-2 text-base">
                     <div className="flex justify-between">

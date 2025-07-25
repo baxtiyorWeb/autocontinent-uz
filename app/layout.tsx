@@ -4,6 +4,7 @@ import "./globals.css";
 import { BottomNavbar } from "@/components/bottom-navbar";
 import { Providers } from "@/providers/provider";
 import { JSX } from "react";
+import { Toaster } from "@/components/ui/toaster"; // <-- Toaster komponentini import qiling
 
 export const metadata: Metadata = {
   title: "v0 App",
@@ -23,6 +24,7 @@ export default function RootLayout({
           <main className="flex-1 pb-16 md:pb-0">{children}</main>
           <BottomNavbar />
         </Providers>
+        <Toaster /> {/* <-- Toaster komponentini shu yerga qo'shing */}
       </body>
     </html>
   );

@@ -3,7 +3,7 @@ import type React from "react";
 import { type JSX, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import axios from "axios"; // Import axios
+// Removed direct axios import as you're using `api` from "@/lib/api"
 import {
   Heart,
   Star,
@@ -16,39 +16,45 @@ import {
   X,
 } from "lucide-react";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer"; // Footer import qilindi
+import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Card komponentlari import qilindi
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator"; // Separator import qilindi
-import { EnhancedProductCard } from "@/components/ui/enhanced-product-card"; // EnhancedProductCard import qilindi
-import api from "@/lib/api";
+import { Separator } from "@/components/ui/separator";
+import { EnhancedProductCard } from "@/components/ui/enhanced-product-card";
+import api from "@/lib/api"; // Your Axios instance
 import { useParams } from "next/navigation";
+import { useToast } from "@/hooks/use-toast"; // Assuming useToast is available
 
 interface ProductImage {
-  image: string;
+  id?: number; // Added id based on your API response structure
+  image: string; // The URL of the image
 }
 
+// Updated ProductDetail to closely match your API response
 interface ProductDetail {
   id: number;
   name: string;
-  price_uzs: number; // Changed from 'price' to 'price_uzs' to match API
-  price_usd: string; // Added 'price_usd' to match API
+  price_uzs: number;
+  price_usd: string;
   description: string;
-  youtube_link?: string; // Changed from 'videoUrl' to 'youtube_link' to match API
+  youtube_link: string | null; // Can be null from API
   images: ProductImage[]; // Array of objects with 'image' key
+  is_active: boolean; // From API, determines 'inStock'
+  category: number; // From API
+  car_model: number; // From API
+
   // Properties below are from mock data and might not be in API, keep for now or remove if not needed
-  originalPrice?: number;
-  rating: number;
-  reviews: number;
-  likes: number;
-  brand: string;
-  model: string;
-  inStock: boolean;
-  stockCount: number;
-  specifications: { [key: string]: string };
-  compatibility: string[];
+  original_price?: number; // Renamed to match ApiProduct structure
+  rating?: number; // Made optional to align with API typically not returning this directly on product detail
+  review_count?: number; // Renamed to match ApiProduct structure
+  like_count?: number; // Renamed to match ApiProduct structure
+  brand?: string;
+  model?: string; // This might be derived from `car_model` or a separate field
+  stock_count?: number; // Display only
+  specifications?: { [key: string]: string };
+  compatibility?: string[];
   colors?: { name: string; hex: string }[];
   capacities?: string[];
   simTypes?: string[];
@@ -63,17 +69,25 @@ interface Comment {
   likes: number;
 }
 
-interface RelatedProduct {
+// Product interface for EnhancedProductCard, matches ApiProduct structure
+interface ProductForCard {
   id: number;
   name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  reviewCount: number;
-  likeCount: number;
-  brand: string;
-  inStock: boolean;
+  price_uzs: number;
+  price_usd: string;
+  original_price?: number;
+  images: { id: number; image: string }[];
+  category: number;
+  car_model: number;
+  description: string;
+  youtube_link?: string;
+  is_active: boolean;
+  rating?: number;
+  review_count?: number;
+  like_count?: number;
+  brand?: string;
+  stock_count?: number;
+  is_liked?: boolean;
 }
 
 // --- Mock Data (keep if API doesn't provide all details for now) ---
@@ -81,35 +95,41 @@ const mockProduct: ProductDetail = {
   id: 1,
   name: "Motor yog'i filteri Chevrolet Lacetti 1.6L",
   price_uzs: 45000,
-  price_usd: "4.00",
-  originalPrice: 55000,
+  price_usd: "4.00", // Example USD price
+  original_price: 55000, // Renamed from originalPrice
   images: [
     {
+      id: 1, // Added ID
       image:
         "https://sp-ao.shortpixel.ai/client/to_auto%2Cq_glossy%2Cret_img%2Cw_1024%2Ch_684/https%3A//www.wyotech.edu/wp-content/uploads/2024/10/DirtyAirFilter-1024x684.png",
     },
     {
+      id: 2, // Added ID
       image:
         "https://www.take5.com/_next/image/?q=75&url=https%3A%2F%2Fimages.ctfassets.net%2Fv3p61xoag5ig%2F6u6WzKPDO4aTUGSv2VubLs%2F6ec302024a132c7aa2d8703f3d3ccce2%2FAdobeStock_216561912.jpeg&w=1920",
     },
     {
+      id: 3, // Added ID
       image:
         "https://scottsauto.com/wp-content/uploads/2024/08/Car-cabin-air-filter.png",
     },
     {
+      id: 4, // Added ID
       image:
         "https://www.ebaymotorsblog.com/motors/blog/wp-content/uploads/2023/10/dirty_and_clean_engine_air_filters-2000.jpg",
     },
   ],
   rating: 4.8,
-  reviews: 124,
-  likes: 89,
+  review_count: 124, // Renamed from reviews
+  like_count: 89, // Renamed from likes
   youtube_link:
     "https://v.made-in-china.com/ucv/sbr/fb313a53798062bfa37faa9f57ae7e/7a2d91b43910307427653209950811_h264_def.mp4",
   brand: "Chevrolet",
   model: "Lacetti",
-  inStock: true,
-  stockCount: 15,
+  is_active: true, // Renamed from inStock
+  stock_count: 15, // Renamed from stockCount
+  category: 1, // Example category ID
+  car_model: 1, // Example car model ID
   description:
     "Yuqori sifatli motor yog'i filteri Chevrolet Lacetti avtomobillari uchun. Original sifat va uzoq muddat xizmat qilish kafolati. Ushbu filtr motoringizni ifloslanishdan himoya qiladi va uning ishlash muddatini uzaytiradi. Mahsulotning ishlash muddati va samaradorligi sinovdan o'tkazilgan bo'lib, u eng yuqori standartlarga javob beradi. O'rnatish oson va texnik xizmat ko'rsatish xarajatlarini kamaytiradi. Avtomobilingizning motorini uzoq muddat himoya qilish uchun ideal tanlov.",
   specifications: {
@@ -141,130 +161,220 @@ const mockProduct: ProductDetail = {
   simTypes: ["1 SIM", "2 SIM", "eSIM"],
 };
 
-const relatedProducts: RelatedProduct[] = [
+// Ensure related products match the `ProductForCard` interface
+const relatedProducts: ProductForCard[] = [
   {
     id: 1,
     name: "Motor yog'i filteri Chevrolet Lacetti",
-    price: 45000,
-    originalPrice: 55000,
-    image:
-      "https://www.prom.uz/_ipx/f_webp/https://devel.prom.uz/upload//products/2023/2/20/2/15-1.PNG",
+    price_uzs: 45000,
+    price_usd: "4.00",
+    original_price: 55000,
+    images: [
+      {
+        id: 1,
+        image:
+          "https://www.prom.uz/_ipx/f_webp/https://devel.prom.uz/upload//products/2023/2/20/2/15-1.PNG",
+      },
+    ],
     rating: 4.8,
-    reviewCount: 124,
-    likeCount: 89,
-    // hasVideo: true, // Removed as it's not in the interface
+    review_count: 124,
+    like_count: 89,
     brand: "Chevrolet",
-    inStock: true,
+    is_active: true,
+    category: 1,
+    car_model: 1,
+    description: "Mock description for related product 1",
   },
   {
     id: 2,
     name: "Tormoz kolodkalari Mercedes W205",
-    price: 320000,
-    image:
-      "https://files.glotr.uz/company/000/005/148/products/2018/01/20/15164302157735-060b8bdbc89e007edc8612b2e5b2d0fe.jpg?_=ozb9y",
+    price_uzs: 320000,
+    price_usd: "28.00",
+    images: [
+      {
+        id: 1,
+        image:
+          "https://files.glotr.uz/company/000/005/148/products/2018/01/20/15164302157735-060b8bdbc89e007edc8612b2e5b2d0fe.jpg?_=ozb9y",
+      },
+    ],
     rating: 4.9,
-    reviewCount: 67,
-    likeCount: 156,
+    review_count: 67,
+    like_count: 156,
     brand: "Mercedes-Benz",
-    inStock: true,
+    is_active: true,
+    category: 2,
+    car_model: 2,
+    description: "Mock description for related product 2",
   },
   {
     id: 3,
     name: "Akkumulyator 60Ah Universal",
-    price: 850000,
-    originalPrice: 950000,
-    image:
-      "https://frankfurt.apollo.olxcdn.com/v1/files/gs4spq08t6uu3-UZ/image;s=1000x700",
+    price_uzs: 850000,
+    price_usd: "75.00",
+    original_price: 950000,
+    images: [
+      {
+        id: 1,
+        image:
+          "https://frankfurt.apollo.olxcdn.com/v1/files/gs4spq08t6uu3-UZ/image;s=1000x700",
+      },
+    ],
     rating: 4.7,
-    reviewCount: 203,
-    likeCount: 234,
+    review_count: 203,
+    like_count: 234,
     brand: "Universal",
-    inStock: false,
+    is_active: false,
+    category: 3,
+    car_model: 3,
+    description: "Mock description for related product 3",
   },
   {
     id: 4,
     name: "Spark plug BMW E90",
-    price: 25000,
-    image: "https://i.ebayimg.com/images/g/SGkAAOSw66hmTNah/s-l1600.webp",
+    price_uzs: 25000,
+    price_usd: "2.20",
+    images: [
+      {
+        id: 1,
+        image: "https://i.ebayimg.com/images/g/SGkAAosw66hmTNah/s-l1600.webp",
+      },
+    ],
     rating: 4.6,
-    reviewCount: 89,
-    likeCount: 67,
+    review_count: 89,
+    like_count: 67,
     brand: "BMW",
-    inStock: true,
+    is_active: true,
+    category: 4,
+    car_model: 4,
+    description: "Mock description for related product 4",
   },
   {
     id: 5,
     name: "Havo filtri Toyota Camry XV70",
-    price: 90000,
-    originalPrice: 100000,
-    image: "https://images.uzum.uz/cpdgksjmdtjnp737srug/original.jpg",
+    price_uzs: 90000,
+    price_usd: "8.00",
+    original_price: 100000,
+    images: [
+      {
+        id: 1,
+        image: "https://images.uzum.uz/cpdgksjmdtjnp737srug/original.jpg",
+      },
+    ],
     rating: 4.5,
-    reviewCount: 75,
-    likeCount: 110,
+    review_count: 75,
+    like_count: 110,
     brand: "Toyota",
-    inStock: true,
+    is_active: true,
+    category: 5,
+    car_model: 5,
+    description: "Mock description for related product 5",
   },
   {
     id: 6,
     name: "Rul gidravlikasi moyi Lada Granta",
-    price: 60000,
-    image:
-      "https://files.glotr.uz/company/000/004/377/products/2015/08/24/14404312035167-680d995de4babcd3869231f81b369eac.jpg?_=ozb9y",
+    price_uzs: 60000,
+    price_usd: "5.30",
+    images: [
+      {
+        id: 1,
+        image:
+          "https://files.glotr.uz/company/000/004/377/products/2015/08/24/14404312035167-680d995de4babcd3869231f81b369eac.jpg?_=ozb9y",
+      },
+    ],
     rating: 4.2,
-    reviewCount: 45,
-    likeCount: 30,
+    review_count: 45,
+    like_count: 30,
     brand: "Lada",
-    inStock: true,
+    is_active: true,
+    category: 6,
+    car_model: 6,
+    description: "Mock description for related product 6",
   },
   {
     id: 7,
     name: "Shina 205/55 R16 (yozgi)",
-    price: 700000,
-    originalPrice: 750000,
-    image:
-      "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20220719/c38cd196-4738-49df-8d6a-aefe51bc4acf.JPEG",
+    price_uzs: 700000,
+    price_usd: "62.00",
+    original_price: 750000,
+    images: [
+      {
+        id: 1,
+        image:
+          "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20220719/c38cd196-4738-49df-8d6a-aefe51bc4acf.JPEG",
+      },
+    ],
     rating: 4.9,
-    reviewCount: 310,
-    likeCount: 450,
+    review_count: 310,
+    like_count: 450,
     brand: "Michelin",
-    inStock: true,
+    is_active: true,
+    category: 7,
+    car_model: 7,
+    description: "Mock description for related product 7",
   },
   {
     id: 8,
     name: "Antifriz (Qizil) 5L",
-    price: 120000,
-    image:
-      "https://shop.driversvillage.uz/uploads/product/KK/KK/f3/antifriz-krasnyi-5l-g12-40-c-super-yuko-4820070248227-1-6.jpg?cacheimg=77903",
+    price_uzs: 120000,
+    price_usd: "10.60",
+    images: [
+      {
+        id: 1,
+        image:
+          "https://shop.driversvillage.uz/uploads/product/KK/KK/f3/antifriz-krasnyi-5l-g12-40-c-super-yuko-4820070248227-1-6.jpg?cacheimg=77903",
+      },
+    ],
     rating: 4.7,
-    reviewCount: 95,
-    likeCount: 180,
+    review_count: 95,
+    like_count: 180,
     brand: "Liqui Moly",
-    inStock: true,
+    is_active: true,
+    category: 8,
+    car_model: 8,
+    description: "Mock description for related product 8",
   },
   {
     id: 9,
     name: "Avtomobil polikchalari GM Cobalt",
-    price: 180000,
-    originalPrice: 200000,
-    image:
-      "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20240226/18217fba0e9fac667350ae818f8d0e55.png",
+    price_uzs: 180000,
+    price_usd: "16.00",
+    original_price: 200000,
+    images: [
+      {
+        id: 1,
+        image:
+          "https://static.sello.uz/unsafe/x500/https://static.sello.uz/fm/20240226/18217fba0e9fac667350ae818f8d0e55.png",
+      },
+    ],
     rating: 4.3,
-    reviewCount: 50,
-    likeCount: 70,
+    review_count: 50,
+    like_count: 70,
     brand: "GM",
-    inStock: false,
+    is_active: false,
+    category: 9,
+    car_model: 9,
+    description: "Mock description for related product 9",
   },
   {
     id: 10,
     name: "Avtomobil tozalash uchun vositalar to'plami",
-    price: 250000,
-    image:
-      "https://images2.zoodmall.uz/cdn-cgi/image/w=500,fit=contain,f=auto/https%3A%2F%2Fimages2.zoodmall.com%2Fhttps%253A%2Fimg.joomcdn.net%2F536a3055093bae4f735fb3560bc45645ae8accdf_original.jpeg",
+    price_uzs: 250000,
+    price_usd: "22.00",
+    images: [
+      {
+        id: 1,
+        image:
+          "https://images2.zoodmall.uz/cdn-cgi/image/w=500,fit=contain,f=auto/https%3A%2F%2Fimages2.zoodmall.com%2Fhttps%253A%2Fimg.joomcdn.net%2F536a3055093bae4f735fb3560bc45645ae8accdf_original.jpeg",
+      },
+    ],
     rating: 4.6,
-    reviewCount: 150,
-    likeCount: 200,
+    review_count: 150,
+    like_count: 200,
     brand: "Turtle Wax",
-    inStock: true,
+    is_active: true,
+    category: 10,
+    car_model: 10,
+    description: "Mock description for related product 10",
   },
 ];
 
@@ -382,7 +492,7 @@ const NewReviewComment = ({
 };
 
 export default function ProductDetailPage(): JSX.Element {
-  const [product, setProduct] = useState<ProductDetail | null>(null); // State to store fetched product data
+  const [product, setProduct] = useState<ProductDetail | null>(null);
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [isLiked, setIsLiked] = useState<boolean>(false);
@@ -393,21 +503,44 @@ export default function ProductDetailPage(): JSX.Element {
   const [selectedSimType, setSelectedSimType] = useState<string | null>(null);
   const [showVideo, setShowVideo] = useState(false);
   const { id } = useParams();
+  const { toast } = useToast(); // Initialize useToast
+
   // Fetch product data from API
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await api.get<ProductDetail>(`/products/${id}/`); // Fetch product with ID 1
+        // Ensure ID is a number, as useParams returns string
+        const productId = Array.isArray(id) ? id[0] : id;
+        if (!productId) {
+          console.error("Product ID is undefined.");
+          setProduct(mockProduct); // Fallback if no ID is found
+          return;
+        }
+
+        const response = await api.get<ProductDetail>(
+          `/products/${productId}/`
+        );
         // Merge API data with mock data, prioritizing API data where available
         const fetchedProduct = {
-          ...mockProduct, // Start with mock data
+          ...mockProduct, // Start with mock data for optional fields not always in API
           ...response.data, // Overlay with API data
-          images: response.data.images || mockProduct.images, // Ensure images array is handled correctly
-          youtube_link: response.data.youtube_link || mockProduct.youtube_link, // Use youtube_link from API or mock
-          price_uzs: response.data.price_uzs, // Use price_uzs from API
-          price_usd: response.data.price_usd, // Use price_usd from API
-          description: response.data.description, // Use description from API
-          name: response.data.name, // Use name from API
+          // Explicitly ensure images and youtube_link are handled
+          images:
+            response.data.images && response.data.images.length > 0
+              ? response.data.images
+              : mockProduct.images,
+          youtube_link:
+            response.data.youtube_link !== undefined
+              ? response.data.youtube_link
+              : mockProduct.youtube_link,
+          // Use properties directly from API response for core fields
+          price_uzs: response.data.price_uzs,
+          price_usd: response.data.price_usd,
+          description: response.data.description,
+          name: response.data.name,
+          is_active: response.data.is_active,
+          category: response.data.category,
+          car_model: response.data.car_model,
         };
         setProduct(fetchedProduct);
         // Initialize selected options based on fetched data or mock data
@@ -433,15 +566,21 @@ export default function ProductDetailPage(): JSX.Element {
         if (mockProduct.simTypes && mockProduct.simTypes.length > 0) {
           setSelectedSimType(mockProduct.simTypes[0]);
         }
+        toast({
+          title: "Xatolik",
+          description:
+            "Mahsulot ma'lumotlarini yuklashda xato yuz berdi. Iltimos, keyinroq urinib ko'ring.",
+          variant: "destructive",
+        });
       }
     };
     fetchProduct();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [id, toast]); // Add 'id' to dependency array to re-fetch when ID changes
 
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading product details...
+        Mahsulot tafsilotlari yuklanmoqda...
       </div>
     );
   }
@@ -456,7 +595,11 @@ export default function ProductDetailPage(): JSX.Element {
   const handleReviewSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (newReviewRating === 0 || newReviewComment.trim() === "") {
-      alert("Iltimos, baho bering va sharh yozing.");
+      toast({
+        title: "Xato",
+        description: "Iltimos, baho bering va sharh yozing.",
+        variant: "destructive",
+      });
       return;
     }
     console.log("New review submitted:", {
@@ -465,7 +608,75 @@ export default function ProductDetailPage(): JSX.Element {
     });
     setNewReviewRating(0);
     setNewReviewComment("");
-    alert("Sharhingiz qabul qilindi!");
+    toast({
+      title: "Muvaffaqiyatli",
+      description: "Sharhingiz qabul qilindi!",
+      variant: "default",
+    });
+  };
+
+  const handleAddToCart = async () => {
+    if (!product.is_active) {
+      toast({
+        title: "Xato",
+        description: "Mahsulot omborda mavjud emas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Prepare product details for the /cart/ POST request body
+    const productDetailPayload = {
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      car_model: product.car_model,
+      price_usd: product.price_usd,
+      description: product.description,
+      youtube_link: product.youtube_link || "", // Ensure it's a string
+      is_active: product.is_active,
+      uploaded_images: product.images.map((img) => img.image), // Array of image URLs
+    };
+
+    const cartPayload = {
+      product: productDetailPayload,
+      quantity: quantity, // Use the current quantity state
+    };
+
+    try {
+      // Make the POST request to /cart/
+      const response = await api.post("/cart/", cartPayload);
+      console.log("Product added to cart successfully:", response.data);
+      toast({
+        title: "Muvaffaqiyatli",
+        description: `${product.name} savatga qo'shildi!`,
+        variant: "default",
+      });
+      // Optionally, update a global cart state (e.g., using a context)
+    } catch (error: any) {
+      console.error("Failed to add to cart:", error);
+      // Check for 401 Unauthorized status
+      if (error.response && error.response.status === 401) {
+        toast({
+          title: "Xatolik",
+          description: "Savatga mahsulot qo'shish uchun ro'yxatdan o'ting.", // "Please register to add products to cart."
+          variant: "destructive",
+        });
+      } else {
+        // Handle other types of errors
+        const errorMessage =
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
+          (error.response?.data && JSON.stringify(error.response.data)) ||
+          error.message ||
+          "Noma'lum xatolik";
+        toast({
+          title: "Xatolik",
+          description: `Savatga qo'shishda xatolik yuz berdi: ${errorMessage}`,
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const averageRating =
@@ -492,7 +703,7 @@ export default function ProductDetailPage(): JSX.Element {
                         <Star
                           key={i}
                           className={`h-4 w-4 ${
-                            i < Math.floor(product.rating)
+                            i < Math.floor(product.rating || 0) // Use 0 if rating is undefined
                               ? "fill-yellow-400 text-yellow-400"
                               : "text-gray-300"
                           }`}
@@ -500,13 +711,14 @@ export default function ProductDetailPage(): JSX.Element {
                       ))}
                     </div>
                     <span className="font-semibold text-sm text-gray-900">
-                      {product.rating}
+                      {product.rating || 0}
                     </span>
                     <Link
                       href="#reviews"
                       className="text-xs text-gray-500 hover:text-primary transition-colors"
                     >
-                      ({product.reviews} sharh)
+                      ({product.review_count || 0} sharh){" "}
+                      {/* Use review_count */}
                     </Link>
                   </div>
                   <Button
@@ -524,59 +736,72 @@ export default function ProductDetailPage(): JSX.Element {
                 {/* Image Gallery - Sticky on larger screens */}
                 <div className="relative flex flex-col items-center gap-4 md:sticky md:top-6 self-start min-w-0">
                   <div className="relative w-full h-[350px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center ">
+                    {/* Ensure product.images is not empty before accessing [0] */}
                     <Image
                       src={
-                        product.images[selectedImage]?.image ||
-                        "/placeholder.svg"
+                        product.images.length > 0
+                          ? product.images[selectedImage]?.image ||
+                            "/placeholder.svg"
+                          : "/placeholder.svg"
                       }
                       alt={product.name}
                       fill
                       className="object-contain"
                     />
-                    {product.originalPrice &&
-                      product.price_uzs < product.originalPrice && (
+                    {product.original_price && // Use original_price
+                      product.price_uzs < product.original_price && (
                         <Badge className="absolute top-3 left-3 bg-destructive text-white font-bold text-xs px-2 py-0.5">
                           -
                           {Math.round(
-                            (1 - product.price_uzs / product.originalPrice) *
+                            (1 - product.price_uzs / product.original_price) *
                               100
                           )}
                           % chegirma
                         </Badge>
                       )}
-                    {product.youtube_link && selectedImage === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <Button
-                          size="sm"
-                          className="rounded-full bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1"
-                          onClick={() => setShowVideo(true)}
-                        >
-                          <Play className="h-4 w-4 mr-1.5" />
-                          Video ko'rish
-                        </Button>
-                      </div>
-                    )}
+                    {product.youtube_link &&
+                      product.youtube_link.trim() !== "" &&
+                      selectedImage === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <Button
+                            size="sm"
+                            className="rounded-full bg-white/90 text-gray-900 hover:bg-white text-xs px-3 py-1"
+                            onClick={() => setShowVideo(true)}
+                          >
+                            <Play className="h-4 w-4 mr-1.5" />
+                            Video ko'rish
+                          </Button>
+                        </div>
+                      )}
                   </div>
                   <div className="flex gap-2 justify-center mt-4 overflow-x-auto pb-2">
-                    {product.images.map((img, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`flex-shrink-0 border-2 rounded-md overflow-hidden transition-all duration-300 ${
-                          selectedImage === index
-                            ? "border-primary "
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <Image
-                          src={img.image || "/placeholder.svg"}
-                          alt={`${product.name} ${index + 1}`}
-                          width={70}
-                          height={70}
-                          className="w-16 h-16 object-cover"
-                        />
-                      </button>
-                    ))}
+                    {/* Only map if images array has items */}
+                    {product.images.length > 0 ? (
+                      product.images.map((img, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedImage(index)}
+                          className={`flex-shrink-0 border-2 rounded-md overflow-hidden transition-all duration-300 ${
+                            selectedImage === index
+                              ? "border-primary "
+                              : "border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <Image
+                            src={img.image || "/placeholder.svg"}
+                            alt={`${product.name} ${index + 1}`}
+                            width={70}
+                            height={70}
+                            className="w-16 h-16 object-cover"
+                          />
+                        </button>
+                      ))
+                    ) : (
+                      // Fallback for when no images are available
+                      <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                        No Image
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -681,9 +906,9 @@ export default function ProductDetailPage(): JSX.Element {
                       <span className="text-2xl font-bold text-gray-900">
                         {product.price_uzs.toLocaleString()} so'm
                       </span>
-                      {product.originalPrice && (
+                      {product.original_price && (
                         <span className="text-lg text-gray-500 line-through">
-                          {product.originalPrice.toLocaleString()} so'm
+                          {product.original_price.toLocaleString()} so'm
                         </span>
                       )}
                     </div>
@@ -709,10 +934,15 @@ export default function ProductDetailPage(): JSX.Element {
                           size="icon"
                           onClick={() =>
                             setQuantity(
-                              Math.min(product.stockCount, quantity + 1)
+                              Math.min(
+                                product.stock_count || Infinity,
+                                quantity + 1
+                              ) // Use stock_count
                             )
                           }
-                          disabled={quantity >= product.stockCount}
+                          disabled={
+                            quantity >= (product.stock_count || Infinity)
+                          } // Use stock_count
                           className="h-10 w-10 rounded-none hover:bg-gray-100"
                         >
                           <Plus className="h-4 w-4" />
@@ -725,7 +955,7 @@ export default function ProductDetailPage(): JSX.Element {
                     <Button
                       size="lg"
                       className="flex-1 h-10 bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-blue-800 text-primary-foreground font-semibold text-base"
-                      disabled={!product.inStock}
+                      onClick={handleAddToCart} // Call the add to cart function
                     >
                       <ShoppingCart className="h-5 w-5 mr-2" />
                       Savatga qo'shish
@@ -747,20 +977,20 @@ export default function ProductDetailPage(): JSX.Element {
                   <div className="space-y-1.0 text-gray-700 text-sm">
                     <div className="flex justify-between">
                       <span className="font-medium">Brend:</span>
-                      <span>{product.brand}</span>
+                      <span>{product.brand || "Noma'lum"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium">Model:</span>
-                      <span>{product.model}</span>
+                      <span>{product.model || "Noma'lum"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium">Mavjudligi:</span>
                       <span
                         className={
-                          product.inStock ? "text-green-600" : "text-red-600"
+                          product.is_active ? "text-green-600" : "text-red-600" // Use is_active
                         }
                       >
-                        {product.inStock ? "Omborda mavjud" : "Tugagan"}
+                        {product.is_active ? "Omborda mavjud" : "Tugagan"}
                       </span>
                     </div>
                   </div>
@@ -825,16 +1055,35 @@ export default function ProductDetailPage(): JSX.Element {
                         xazna
                       </span>
                     </div>
+                    {/* Calculate monthly payment based on product.price_uzs and a hypothetical interest/term */}
                     <span className="font-bold text-blue-800 text-base">
-                      2 066 400 so'm
+                      {(product.price_uzs / 6).toLocaleString()} so'm{" "}
+                      {/* Example for 6 months */}
                     </span>
                   </div>
                   <div className="flex justify-between font-semibold text-base text-gray-900">
                     <span>Umumiy summa:</span>
-                    <span>24 796 800 so'm</span>
+                    <span>{product.price_uzs.toLocaleString()} so'm</span>{" "}
+                    {/* Total sum is product price */}
                   </div>
                   <Button
-                    onClick={() => (window.location.href = "/checkout")}
+                    onClick={() => {
+                      // You'll need to send the `product_id` and `quantity` to the checkout endpoint.
+                      // For now, it redirects. Implement actual POST request to /cart/checkout/ here.
+                      // Example payload for /cart/checkout/:
+                      // {
+                      //   "full_name": "string",
+                      //   "phone_number": "string",
+                      //   "address": "string",
+                      //   "items": [
+                      //     {
+                      //       "product_id": 0,
+                      //       "quantity": 9223372036854776000
+                      //     }
+                      //   ]
+                      // }
+                      window.location.href = "/checkout";
+                    }}
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base py-2.5"
                   >
                     Rassrochka orqali buyurtma berish
@@ -848,160 +1097,180 @@ export default function ProductDetailPage(): JSX.Element {
                 Xususiyatlar
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                {Object.entries(product.specifications).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="flex justify-between items-center py-1.5 border-b border-gray-200 last:border-0"
-                  >
-                    <span className="font-medium text-gray-900 text-sm">
-                      {key}:
-                    </span>
-                    <span className="text-gray-700 text-right text-sm">
-                      {value}
-                    </span>
-                  </div>
-                ))}
+                {product.specifications &&
+                  Object.entries(product.specifications).map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex justify-between text-gray-700 text-sm"
+                    >
+                      <span className="font-medium">{key}:</span>
+                      <span>{value}</span>
+                    </div>
+                  ))}
               </div>
             </div>
 
             {/* Compatibility Section */}
-            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Quyidagi avtomobillarga mos keladi:
-              </h3>
-              <ul className="space-y-2">
-                {product.compatibility.map((item, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-                    <span className="text-gray-700 text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {product.compatibility && product.compatibility.length > 0 && (
+              <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  Mos keladi
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
+                  {product.compatibility.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Reviews Section */}
             <div
               className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6"
               id="reviews"
             >
-              <h3 className="text-xl font-semibold text-gray-900 mb-5">
-                Sharhlar ({product.reviews})
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Mijozlar Sharhlari ({comments.length})
               </h3>
-              <div className="space-y-6">
-                {/* Review Summary */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-4 border-b border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="text-4xl font-bold text-gray-900">
-                      {averageRating.toFixed(1)}
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-5 w-5 ${
-                              i < Math.floor(averageRating)
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-gray-600 text-xs">
-                        {comments.length} ta sharh asosida
-                      </span>
-                    </div>
-                  </div>
-                  <Button className="bg-primary hover:bg-blue-600 text-primary-foreground font-semibold py-2.5 px-5 rounded-md text-sm">
-                    Sharh qoldirish
-                  </Button>
-                </div>
-                {/* Add review form */}
-                <div className="pt-4 border-b border-gray-200 pb-6">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                    Sharh qoldiring
-                  </h4>
-                  <form onSubmit={handleReviewSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                        Baho bering:
-                      </label>
-                      <NewReviewRating
-                        rating={newReviewRating}
-                        setRating={setNewReviewRating}
-                      />
-                    </div>
-                    <div>
-                      <NewReviewComment
-                        comment={newReviewComment}
-                        setComment={setNewReviewComment}
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      className="bg-primary hover:bg-blue-600 text-primary-foreground font-semibold py-2.5 px-5 rounded-md text-sm"
-                    >
-                      Sharh qoldirish
-                    </Button>
-                  </form>
-                </div>
-                {/* Reviews list */}
-                <div className="space-y-4 pt-4">
-                  {comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-base">
-                            {comment.user.charAt(0)}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900 text-sm">
-                              {comment.user}
-                            </h4>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <div className="flex">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`h-3.5 w-3.5 ${
-                                      i < comment.rating
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-gray-300"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                              <span className="text-xs text-gray-500">
-                                {comment.date}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 text-gray-600 hover:text-primary"
-                        >
-                          <Heart className="h-3.5 w-3.5 mr-1" />
-                          {comment.likes}
-                        </Button>
-                      </div>
-                      <p className="text-gray-700 leading-relaxed text-sm">
-                        {comment.comment}
-                      </p>
-                    </div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
+                        i < Math.floor(averageRating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
                   ))}
                 </div>
+                <span className="font-semibold text-lg text-gray-900">
+                  {averageRating.toFixed(1)}
+                </span>
+                <span className="text-gray-500 text-sm">
+                  ({comments.length} ta sharh asosida)
+                </span>
+              </div>
+              <Separator className="my-6" />
+
+              {/* Review List */}
+              <div className="space-y-6">
+                {comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="pb-4 border-b last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900">
+                          {comment.user}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          {comment.date}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-500 text-xs">
+                        <Heart className="h-3 w-3" />
+                        <span>{comment.likes}</span>
+                      </div>
+                    </div>
+                    <div className="flex mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < comment.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {comment.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <Separator className="my-6" />
+
+              {/* Add New Review */}
+              <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                Sharh qoldirish
+              </h4>
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="rating"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Bahoyingizni bering:
+                  </label>
+                  <NewReviewRating
+                    rating={newReviewRating}
+                    setRating={setNewReviewRating}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="comment"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Sizning sharhingiz:
+                  </label>
+                  <NewReviewComment
+                    comment={newReviewComment}
+                    setComment={setNewReviewComment}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2"
+                >
+                  Sharhni yuborish
+                </Button>
+              </form>
+            </div>
+
+            {/* Related Products Section */}
+            <div className="bg-white rounded-xl  border border-gray-200 p-4 sm:p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                O'xshash mahsulotlar
+              </h3>
+              <div
+                className="grid gap-4 xs:gap-3 sm:gap-4
+             grid-cols-2
+             max-sm-xs:grid-cols-2
+             max-sm-xs:gap-2
+             max-sm-xs:shadow-none
+             sm:grid-cols-3
+             md:grid-cols-4
+             lg:grid-cols-3 xl:grid-cols-4"
+              >
+                {relatedProducts.map((product) => (
+                  <EnhancedProductCard
+                    key={product.id}
+                    {...product}
+                    // Ensure all required props for EnhancedProductCard are passed
+                    // and match its interface. If a prop is optional in ProductForCard
+                    // but required in EnhancedProductCardProps, provide a default here.
+                    youtube_link={product.youtube_link || ""}
+                    brand={product.brand || "Noma'lum"}
+                    stock_count={product.stock_count || 0}
+                    is_liked={product.is_liked || false}
+                    // Pass onLike if you have a like functionality
+                    // onLike={() => handleLike(product.id)}
+                  />
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Right Column: Installment Payment - Sticky on larger screens */}
-          <div className="max-sm-xs:hidden lg:col-span-1 min-w-0">
-            <Card className="sticky top-6 bg-white p-5 rounded-xl  border border-gray-200">
+          {/* Right Column: Rassrochka (Installment) Details - Visible on large screens */}
+          <div className="lg:col-span-1 hidden lg:block min-w-0">
+            <Card className="sticky top-6 bg-white  rounded-xl  border border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-bold text-gray-900">
                   Rassrochka to'lovi
@@ -1048,44 +1317,32 @@ export default function ProductDetailPage(): JSX.Element {
                     </span>
                   </div>
                   <span className="font-bold text-blue-800 text-base">
-                    2 066 400 so'm
+                    {(product.price_uzs / 6).toLocaleString()} so'm{" "}
+                    {/* Example for 6 months */}
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-base text-gray-900">
                   <span>Umumiy summa:</span>
-                  <span>24 796 800 so'm</span>
+                  <span>{product.price_uzs.toLocaleString()} so'm</span>
                 </div>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base py-2.5">
+                <Button
+                  onClick={() => {
+                    // Assuming your checkout page expects a product ID and quantity
+                    const productId = product.id;
+                    const productQuantity = quantity;
+                    window.location.href = `/checkout?productId=${productId}&quantity=${productQuantity}`;
+                  }}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base py-2.5"
+                >
                   Rassrochka orqali buyurtma berish
                 </Button>
               </CardContent>
             </Card>
           </div>
         </div>
-
-        {/* Related Products */}
-        <div className="mb-12 bg-white rounded-xl  border border-gray-200 max-sm-xs:p-0 p-4 sm:p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-5">
-            O'xshash mahsulotlar
-          </h2>
-          <div
-            className="grid gap-4 xs:gap-3 sm:gap-4
-             grid-cols-2                  
-             max-sm-xs:grid-cols-2     
-             max-sm-xs:gap-2     
-             max-sm-xs:shadow-none     
-             sm:grid-cols-3
-             md:grid-cols-3
-             lg:grid-cols-4
-             xl:grid-cols-5"
-          >
-            {relatedProducts.map((product) => (
-              <EnhancedProductCard key={product.id} {...product} />
-            ))}
-          </div>
-        </div>
       </main>
       <Footer />
+
       {showVideo && product.youtube_link && (
         <VideoPlayer
           videoUrl={product.youtube_link}

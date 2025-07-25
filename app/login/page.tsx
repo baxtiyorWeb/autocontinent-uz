@@ -14,18 +14,11 @@ import axios from "axios"; // Import axios for making HTTP requests
 import api from "@/lib/api";
 
 export default function LoginPage(): JSX.Element {
-  // We need a way to get the phone number.
-  // For this example, I'll hardcode one. In a real app,
-  // this would come from a previous input step or context.
-  const [phoneNumber, setPhoneNumber] = useState<string>(""); // State for phone number
-  const [step, setStep] = useState<"phone" | "code">("phone"); // Start with phone input
-  const [verificationCode, setVerificationCode] = useState<string[]>([
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [step, setStep] = useState<"phone" | "code">("phone");
+  const [verificationCode, setVerificationCode] = useState<string[]>(
+    Array(5).fill("")
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +36,7 @@ export default function LoginPage(): JSX.Element {
     if (step === "code") {
       inputRefs[0].current?.focus();
     }
-  }, [step]); // Dependency array includes step
+  }, [step]);
 
   const handlePhoneSubmit = async (
     e: React.FormEvent<HTMLFormElement>
@@ -51,14 +44,9 @@ export default function LoginPage(): JSX.Element {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
-    // In a real application, you'd send the phone number to your backend
-    // to request an OTP. For this example, we'll just simulate success.
     try {
-      // Simulate API call to request OTP (e.g., POST to /api/request-otp)
-      // await axios.post("http://127.0.0.1:8000/api/request-otp/", { phone: phoneNumber });
       console.log("Phone number submitted:", phoneNumber);
-      setStep("code"); // Move to code step on successful phone submission
+      setStep("code");
     } catch (err) {
       console.error("Failed to request OTP:", err);
       setError("Telefon raqamini yuborishda xatolik yuz berdi.");
@@ -74,26 +62,27 @@ export default function LoginPage(): JSX.Element {
     setIsLoading(true);
     setError(null);
 
-    const fullCode = verificationCode.join(""); // Combine digits into a single string
+    const fullCode = verificationCode.join("");
 
     try {
       const API_URL = "/verify-code/";
-
       const response = await api.post(API_URL, {
         code: fullCode,
-        phone: phoneNumber, // Send the phone number along with the code
+        phone: phoneNumber,
       });
 
-      if (response.status === 200) {
-        // Assuming 200 OK for successful verification
+      if (response.status === 200 && response.data.success) {
         console.log("Verification successful:", response.data);
-        // Redirect to home or previous page upon successful verification
-
+        localStorage.setItem("userData", JSON.stringify(response.data.data));
+        console.log("User data saved to localStorage.");
         setTimeout(() => {
           window.location.href = "/";
         }, 800);
       } else {
-        setError("Kodni tekshirishda kutilmagan muammo yuz berdi.");
+        setError(
+          response.data.message ||
+            "Kodni tekshirishda kutilmagan muammo yuz berdi."
+        );
       }
     } catch (err) {
       console.error("Verification failed:", err);
@@ -122,19 +111,27 @@ export default function LoginPage(): JSX.Element {
     e: ChangeEvent<HTMLInputElement>,
     index: number
   ): void => {
-    const { value } = e.target;
-    const newVerificationCode = [...verificationCode];
+    const value = e.target.value;
 
-    if (value.length > 1) {
-      newVerificationCode[index] = value[value.length - 1];
-    } else {
-      newVerificationCode[index] = value;
+    // Handle pasting the entire code
+    if (value.length === 5 && /^\d{5}$/.test(value)) {
+      const newCode = value.split("");
+      setVerificationCode(newCode);
+      inputRefs[inputRefs.length - 1].current?.focus(); // Focus last input
+      return;
     }
 
-    setVerificationCode(newVerificationCode);
+    // Handle single digit input
+    const newVerificationCode = [...verificationCode];
+    if (/^\d?$/.test(value)) {
+      // Allow only a single digit or empty
+      newVerificationCode[index] = value;
+      setVerificationCode(newVerificationCode);
 
-    if (value && index < inputRefs.length - 1) {
-      inputRefs[index + 1].current?.focus();
+      // Move focus to the next input if a digit was entered
+      if (value && index < inputRefs.length - 1) {
+        inputRefs[index + 1].current?.focus();
+      }
     }
   };
 
@@ -153,6 +150,7 @@ export default function LoginPage(): JSX.Element {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* <Header /> */}
       <div className="flex-1 flex items-center justify-center py-12 px-4">
         <div className="max-w-sm mx-auto w-full">
           <Card className="shadow-none border-none bg-white/80 backdrop-blur-sm p-6">
@@ -249,7 +247,7 @@ export default function LoginPage(): JSX.Element {
                       className="w-full h-11 text-base"
                       onClick={() => {
                         setStep("phone");
-                        setVerificationCode(["", "", "", ""]); // Reset code when changing number
+                        setVerificationCode(Array(5).fill("")); // Reset code when changing number
                         setError(null);
                       }}
                       disabled={isLoading}
@@ -260,7 +258,6 @@ export default function LoginPage(): JSX.Element {
                 </form>
               )}
 
-              {/* Telegram Bot Info - Always visible if it relates to obtaining the code */}
               {step === "code" && (
                 <div className="mt-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-start gap-2">
@@ -275,7 +272,7 @@ export default function LoginPage(): JSX.Element {
                         Tasdiqlash kodi Telegram botimiz orqali yuboriladi.
                         Botga start bosing va kontaktingizni ulashing.
                       </p>
-                      <TelegramBotButton />
+                      {/* <TelegramBotButton /> */}
                     </div>
                   </div>
                 </div>
@@ -296,8 +293,7 @@ export default function LoginPage(): JSX.Element {
           </div>
         </div>
       </div>
-
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

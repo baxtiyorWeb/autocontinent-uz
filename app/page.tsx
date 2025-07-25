@@ -23,12 +23,12 @@ export default function HomePage(): JSX.Element {
         {/* `py-8`: Vertikal bo'shliq. */}
         {/* `space-y-12`: Ichki elementlar orasiga vertikal bo'shliq qo'shadi. */}
         <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-10 sm:space-y-12">
-          <div className="hidden sm:block">
+          <div className="">
             <CategoriesSection title="Kategoriyalar" />
           </div>
-          <div className="lg:hidden max-sm-xs:flex">
+          {/* <div className="lg:hidden max-sm-xs:flex">
             <BrandGridSection />
-          </div>
+          </div> */}
           <ProductsSection
             title="Eng ko'p sotilgan mahsulotlar"
             type="bestselling"

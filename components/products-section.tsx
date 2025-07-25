@@ -25,17 +25,22 @@ interface ApiProduct {
 interface Product {
   id: number;
   name: string;
-  price: number; // This will be price_uzs
-  originalPrice?: number; // You might need to add this to your API or calculate it
-  image: string; // This will be the first image from the images array
-  rating: number; // You might need to add this to your API or use a default
-  reviewCount: number; // You might need to add this to your API or use a default
-  likeCount: number; // You might need to add this to your API or use a default
-  hasVideo?: boolean; // Based on youtube_link
-  brand: string; // You might need to add this to your API or derive it
-  inStock: boolean; // Based on is_active
-  stockCount?: number;
-  description?: string;
+  category: number;
+  car_model: number;
+  price_usd: string; // "3999.00"
+  price_uzs: number; // 49987500
+  description: string;
+  youtube_link: string | null; // API might return null for no video
+  is_active: boolean; // For 'inStock'
+  images: { id: number; image: string }[]; // Array of image objects
+  // Optional fields that might be present or missing from your API
+  original_price?: number;
+  rating?: number;
+  review_count?: number;
+  like_count?: number;
+  brand?: string;
+  stock_count?: number;
+  is_liked?: boolean;
 }
 
 interface ProductsSectionProps {
@@ -116,20 +121,21 @@ export function ProductsSection({
     data?.results?.map((apiProduct: ApiProduct) => ({
       id: apiProduct.id,
       name: apiProduct.name,
-      price: apiProduct.price_uzs,
-      // You can add logic for originalPrice if your API provides it or if you have discounts
-      // originalPrice: apiProduct.original_price_uzs, // Example if your API had it
-      image:
-        apiProduct.images.length > 0
-          ? apiProduct.images[0].image
-          : "/placeholder-image.png", // Use a placeholder if no image
-      rating: 0, // Default or fetch from API if available
-      reviewCount: 0, // Default or fetch from API if available
-      likeCount: 0, // Default or fetch from API if available
-      hasVideo: !!apiProduct.youtube_link, // True if youtube_link exists
-      brand: "Unknown", // You might need to add a brand field to your API or derive it
-      inStock: apiProduct.is_active,
+      category: apiProduct.category,
+      car_model: apiProduct.car_model,
+      price_usd: apiProduct.price_usd,
+      price_uzs: apiProduct.price_uzs,
       description: apiProduct.description,
+      youtube_link: apiProduct.youtube_link,
+      is_active: apiProduct.is_active,
+      images: apiProduct.images,
+
+      // optional or default fields:
+      rating: 0,
+      review_count: 0,
+      like_count: 0,
+      brand: apiProduct.car_model || "Unknown",
+      is_liked: false,
     })) || [];
 
   return (
@@ -142,24 +148,41 @@ export function ProductsSection({
         <Button
           variant="outline"
           className="text-sm xs:text-xs px-3 py-1 xs:px-2 xs:py-0.5 whitespace-nowrap"
+          asChild
         >
-          Barchasini ko'rish
+          <Link href="/products">Barchasini ko'rish</Link>
         </Button>
       </div>
 
       <div
         className="grid gap-4 xs:gap-3 sm:gap-4
-             grid-cols-2                  
-             max-sm-xs:grid-cols-2     
-             max-sm-xs:gap-2     
-             max-sm-xs:shadow-none     
-             sm:grid-cols-3
-             md:grid-cols-4
-             lg:grid-cols-5
-             xl:grid-cols-6"
+           grid-cols-2
+           max-sm-xs:grid-cols-2
+           max-sm-xs:gap-2
+           max-sm-xs:shadow-none
+           sm:grid-cols-3
+           md:grid-cols-4
+           lg:grid-cols-5
+           xl:grid-cols-6"
       >
-        {products.map((product) => (
-          <EnhancedProductCard key={product.id} {...product} />
+        {products?.map((product: any) => (
+          <EnhancedProductCard
+            key={product.id}
+            {...product} // This spreads all properties of the product object
+            // You might want to explicitly pass some for clarity or if names differ
+            id={product.id}
+            name={product.name}
+            price_uzs={product.price_uzs}
+            price_usd={product.price_usd}
+            images={product.images}
+            brand={product.brand} // The numeric brand ID from the product
+            brand_name={product.brand_name} // The brand name from the parent carModel
+            car_model={product.car_model}
+            description={product.description}
+            youtube_link={product.youtube_link}
+            is_active={product.is_active}
+            // ... other optional props like rating, review_count, like_count
+          />
         ))}
       </div>
     </section>

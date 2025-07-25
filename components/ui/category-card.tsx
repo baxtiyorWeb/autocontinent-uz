@@ -31,7 +31,7 @@ export function CategoryCard({
           <div className="relative mx-auto w-16 h-16 flex items-center justify-center rounded-xl bg-blue-50 group-hover:bg-blue-100 transition-colors duration-300">
             {icon ? (
               <Image
-                src={icon || "/placeholder.svg"}
+                src={'https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg'}
                 alt={name}
                 width={40} // Kichiklashtirildi
                 height={40} // Kichiklashtirildi

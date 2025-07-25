@@ -6,6 +6,8 @@ import { Heart, Star, Play, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { JSX } from "react";
+import { useToast } from "@/hooks/use-toast"; // Assuming you have useToast
+import api from "@/lib/api"; // Your axios instance
 
 interface ProductCardProps {
   id: number;
@@ -21,7 +23,6 @@ interface ProductCardProps {
   inStock: boolean;
   isLiked?: boolean;
   onLike?: () => void;
-  onAddToCart?: () => void;
 }
 
 export function ProductCard({
@@ -38,11 +39,53 @@ export function ProductCard({
   inStock,
   isLiked = false,
   onLike,
-  onAddToCart,
 }: ProductCardProps): JSX.Element {
+  const { toast } = useToast();
+
   const discountPercent = originalPrice
     ? Math.round((1 - price / originalPrice) * 100)
     : 0;
+
+  const handleAddToCart = async () => {
+    // Placeholder user data - IMPORTANT: Replace with actual user data or input
+    const orderData = {
+      full_name: "John Doe",
+      phone_number: "+998901234567",
+      address: "123 Main St, Anytown",
+      items: [
+        {
+          product_id: id,
+          quantity: 1, // Default quantity, could be dynamic
+        },
+      ],
+    };
+
+    try {
+      // Use api.post for POST requests with Axios
+      // The first argument is the URL, the second is the data payload
+      const response = await api.post("/orders/", orderData); // Correct Axios POST syntax
+      console.log("Order created successfully:", response.data); // Axios response has data property
+      toast({
+        title: "Success",
+        description: `${name} savatga qo'shildi!`,
+        variant: "default",
+      });
+      // Optionally, you might want to redirect or update cart UI here
+    } catch (error: any) {
+      console.error("Failed to add to cart:", error);
+      // Axios errors often have a response property with more details
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.message ||
+        "Unknown error";
+      toast({
+        title: "Error",
+        description: `Savatga qo'shishda xatolik yuz berdi: ${errorMessage}`,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
@@ -146,8 +189,8 @@ export function ProductCard({
 
         <Button
           className="w-full bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-blue-800 text-primary-foreground font-medium"
-          disabled={!inStock}
-          onClick={onAddToCart}
+          // disabled={!inStock}
+          onClick={handleAddToCart}
         >
           {inStock ? (
             <>

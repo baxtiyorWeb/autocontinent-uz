@@ -6,64 +6,164 @@ import { Heart, Star, Play, ShoppingCart, Eye, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { QuickViewModal } from "@/components/quick-view-modal"; // Ensure this path is correct
+import { QuickViewModal } from "@/components/quick-view-modal";
 import type { JSX } from "react/jsx-runtime";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/api"; // Your axios instance
+
+// Define types that exactly match your API's product structure
+interface ProductImage {
+  id?: number; // Optional as it might not be sent for new images
+  image: string; // The URL of the image
+}
+
+// No longer need ProductDetailsForCart as we're sending just ID and quantity
 
 interface EnhancedProductCardProps {
+  // Directly map props to match the API response structure where possible
   id: number;
   name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  reviewCount: number;
-  likeCount: number;
-  hasVideo?: boolean;
-  brand: string;
-  inStock: boolean;
-  stockCount?: number;
-  description?: string;
-  isLiked?: boolean;
+  price_uzs: number;
+  price_usd: string;
+  original_price?: number; // Optional, for display
+  images: ProductImage[]; // Use the ProductImage interface
+  // The following props are part of the 'product' object within your car model's 'products' array
+  brand: number; // Assuming this refers to brand ID from the product object
+  car_model: number;
+  description: string;
+  youtube_link: string | null; // Can be null, so allow for it
+  is_active: boolean;
+
+  // Props for display/card specific logic (can have defaults if not from API)
+  rating?: number;
+  review_count?: number;
+  like_count?: number;
+  brand_name?: string; // To display brand name, derived from 'brand' ID or passed separately
+  stock_count?: number; // Display only, not for API
+  is_liked?: boolean;
   onLike?: () => void;
-  onAddToCart?: () => void;
 }
 
 export function EnhancedProductCard({
   id,
   name,
-  price,
-  originalPrice,
-  image,
-  rating,
-  reviewCount,
-  likeCount,
-  hasVideo,
-  brand,
-  inStock,
-  stockCount,
-  description,
-  isLiked = false,
+  price_uzs,
+  price_usd,
+  original_price,
+  images,
+  // These props are still needed for QuickViewModal and potentially other parts of the card
+  brand, // From product object
+  car_model, // From product object
+  description, // From product object
+  youtube_link, // From product object
+  is_active, // From product object
+
+  // Default values for optional/display-only props
+  rating = 0,
+  review_count = 0,
+  like_count = 0,
+  brand_name = "Noma'lum Brend",
+  is_liked = false,
   onLike,
-  onAddToCart,
 }: EnhancedProductCardProps): JSX.Element {
+  const { toast } = useToast();
+
+  // Internal mapping for display and `QuickViewModal`
+  const price = price_uzs;
+  const originalPrice = original_price;
+  const primaryImage = images[0]?.image || "/placeholder.svg";
+  const hasVideo = !!youtube_link;
+  const inStock = true; // Using is_active to determine stock status
+  const reviewCount = review_count;
+  const likeCountProp = like_count;
+
   const discountPercent = originalPrice
     ? Math.round((1 - price / originalPrice) * 100)
     : 0;
   const [isQuickViewOpen, setIsQuickViewOpen] = useState<boolean>(false);
 
+  // Product data for QuickViewModal remains the same, as it needs full details
   const productDataForQuickView = {
     id,
     name,
     price,
     originalPrice,
-    image,
+    image: primaryImage,
     rating,
     reviewCount,
-    likeCount,
-    brand,
+    likeCount: likeCountProp,
+    brand: brand_name,
     inStock,
-    stockCount,
     description,
+    youtube_link,
+  };
+
+  const handleAddToCart = async () => {
+    if (!inStock) {
+      toast({
+        title: "Xato", // Error
+        description: "Mahsulot omborda mavjud emas.", // Product is not available in stock.
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // --- KORREKSIYA BU YERDA ---
+    // Backendning talabiga mos keladigan payloadni yaratish
+    const cartPayload = {
+      product: id, // Faqat mahsulot ID'sini yuboramiz
+      quantity: 1, // Miqdorni 1 qilib belgilaymiz
+    };
+    // --- ----------------- ---
+
+    try {
+      const response = await api.post("/cart/", cartPayload);
+      console.log("Product added to cart successfully:", response.data);
+      toast({
+        title: "Muvaffaqiyatli", // Success
+        description: `${name} savatga qo'shildi!`, // ${name} added to cart!
+        variant: "default",
+      });
+      // Optionally, update a global cart state (e.g., using a context)
+    } catch (error: any) {
+      console.error("Failed to add to cart:", error);
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast({
+            title: "Xatolik", // Error
+            description: "Savatga mahsulot qo'shish uchun ro'yxatdan o'ting.", // Please register to add products to cart.
+            variant: "destructive",
+          });
+        } else if (error.response.data) {
+          const errorMessage =
+            error.response.data.detail ||
+            error.response.data.message ||
+            (typeof error.response.data === "string"
+              ? error.response.data
+              : JSON.stringify(error.response.data)) ||
+            "Noma'lum xatolik"; // Unknown error
+          toast({
+            title: "Xatolik", // Error
+            description: `Savatga qo'shishda xatolik yuz berdi: ${errorMessage}`, // Error adding to cart: ${errorMessage}
+            variant: "destructive",
+          });
+        }
+      } else if (error.request) {
+        toast({
+          title: "Xatolik", // Error
+          description:
+            "Tarmoq xatosi. Iltimos, internetga ulanishni tekshiring.", // Network error. Please check your internet connection.
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Xatolik", // Error
+          description: `Kutilmagan xatolik: ${error.message}`, // Unexpected error: ${error.message}
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
@@ -73,10 +173,10 @@ export function EnhancedProductCard({
         <div className="relative overflow-hidden rounded-t-lg">
           <Link href={`/products/${id}`}>
             <Image
-              src={image || "/placeholder.svg"}
+              src={primaryImage}
               alt={name}
-              width={220} // Maksimal kenglik
-              height={140} // Maksimal balandlik
+              width={220}
+              height={140}
               className="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </Link>
@@ -107,8 +207,8 @@ export function EnhancedProductCard({
           {/* Top-right action buttons */}
           <div
             className={`absolute top-1 right-1 flex flex-col gap-0.5 z-10
-                        opacity-100 md:opacity-0 md:group-hover:opacity-100           {/* Mobil ekranda doim ko'rinadi, kattaroq ekranda hoverda */}
-                        transform md:translate-x-4 md:group-hover:translate-x-0     {/* Mobil ekranda doim o'rnida, kattaroq ekranda hover animatsiyasi */}
+                        opacity-100 md:opacity-0 md:group-hover:opacity-100
+                        transform md:translate-x-4 md:group-hover:translate-x-0
                         transition-all duration-300`}
           >
             <Button
@@ -116,12 +216,11 @@ export function EnhancedProductCard({
               size="icon"
               className="h-6 w-6 xs:h-7 xs:w-7 bg-white/90 hover:bg-white shadow-md backdrop-blur-sm rounded-full"
               onClick={onLike}
-              aria-label={isLiked ? "Unlike" : "Like"}
+              aria-label={is_liked ? "Unlike" : "Like"}
             >
               <Heart
                 className={`h-3 w-3 xs:h-4 xs:w-4 ${
-                  // xs:h-4, xs:w-4 qo'shildi
-                  isLiked
+                  is_liked
                     ? "fill-destructive text-destructive"
                     : "text-gray-600"
                 }`}
@@ -135,8 +234,7 @@ export function EnhancedProductCard({
               aria-label="View product details"
             >
               <Link href={`/products/${id}`}>
-                <Eye className="h-3 w-3 xs:h-4 xs:w-4 text-gray-600" />{" "}
-                {/* xs:h-4, xs:w-4 qo'shildi */}
+                <Eye className="h-3 w-3 xs:h-4 xs:w-4 text-gray-600" />
               </Link>
             </Button>
             <Button
@@ -151,8 +249,8 @@ export function EnhancedProductCard({
 
           <div
             className={`absolute bottom-1 left-1/2 transform -translate-x-1/2 z-10
-                        opacity-100 md:opacity-0 md:group-hover:opacity-100           
-                        md:translate-y-4 md:group-hover:translate-y-0             
+                        opacity-100 md:opacity-0 md:group-hover:opacity-100
+                        md:translate-y-4 md:group-hover:translate-y-0
                         transition-all duration-300`}
           >
             <Button
@@ -168,28 +266,22 @@ export function EnhancedProductCard({
 
         {/* Product Details Content */}
         <div className="p-3 xs:p-2 flex flex-col flex-grow">
-          {" "}
-          {/* Kichik ekranlar uchun padding kamaytirildi */}
           {/* Brand and Like Count */}
           <div className="flex items-center justify-between mb-1">
             <Badge
               variant="outline"
-              className="text-primary border-blue-200 bg-blue-50 font-semibold text-[9px] xs:text-[10px] px-1.5 py-0.5" // xs:text-[10px] qo'shildi
+              className="text-primary border-blue-200 bg-blue-50 font-semibold text-[9px] xs:text-[10px] px-1.5 py-0.5"
             >
-              {brand}
+              {brand_name}
             </Badge>
             <div className="flex items-center gap-0.5 text-[9px] xs:text-[10px] text-gray-500">
-              {" "}
-              {/* xs:text-[10px] qo'shildi */}
               <Heart className="h-2.5 w-2.5" />
-              <span className="font-medium">{likeCount}</span>
+              <span className="font-medium">{likeCountProp}</span>
             </div>
           </div>
           {/* Product Name */}
           <Link href={`/products/${id}`} className="flex-grow">
             <h3 className="font-semibold max-sm-xs:text-xs text-gray-800 text-xs xs:text-sm leading-tight line-clamp-2 hover:text-primary transition-colors duration-200 min-h-[2.5rem]  max-sm-xs:max-h-[1.5rem] mb-1">
-              {" "}
-              {/* text-xs qo'shildi */}
               {name}
             </h3>
           </Link>
@@ -208,39 +300,30 @@ export function EnhancedProductCard({
               ))}
             </div>
             <span className="text-[9px] xs:text-[10px] font-medium text-gray-700">
-              {" "}
-              {/* xs:text-[10px] qo'shildi */}
               {rating}
             </span>
             <span className="text-[9px] xs:text-[10px] text-gray-500">
               ({reviewCount})
-            </span>{" "}
-            {/* xs:text-[10px] qo'shildi */}
+            </span>
           </div>
           {/* Price Information */}
           <div className="space-y-0 mb-3   max-sm-xs:mb-1">
             <div className="flex items-center gap-1">
               <span className="text-base max-sm-xs:text-sm xs:text-lg font-bold text-gray-900">
-                {" "}
-                {/* text-base qo'shildi */}
-                {price.toLocaleString()}{" "}
+                {price}{" "}
                 <span className="text-sm xs:text-base text-gray-600">
                   so&apos;m
-                </span>{" "}
-                {/* text-sm qo'shildi */}
+                </span>
               </span>
             </div>
             {originalPrice && (
               <div className="flex items-center gap-1">
                 <span className="text-[9px] xs:text-[10px] text-gray-500 line-through">
-                  {" "}
-                  {/* xs:text-[10px] qo'shildi */}
-                  {originalPrice.toLocaleString()} so&apos;m
+                  {originalPrice} so&apos;m
                 </span>
                 <span className="text-[9px] xs:text-[10px] text-green-600 font-semibold">
-                  {" "}
-                  {/* xs:text-[10px] qo'shildi */}
-                  {(originalPrice - price).toLocaleString()} so&apos;m tejash
+                  {originalPrice - price}{" "}
+                  <span className="max-sm-xs:hidden">so&apos;m</span> tejash
                 </span>
               </div>
             )}
@@ -256,7 +339,7 @@ export function EnhancedProductCard({
     }
   `}
             disabled={!inStock}
-            onClick={onAddToCart}
+            onClick={handleAddToCart}
           >
             {inStock ? (
               <>
