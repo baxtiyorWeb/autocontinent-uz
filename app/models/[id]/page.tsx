@@ -39,7 +39,7 @@ export default function ModelsPage(): JSX.Element {
         // Fetch data for a specific brand, which includes its car_models
         const res = await api.get<BrandDetailResponse>(`/brands/${brandId}/`);
         const data = res.data; // Access the data directly from the response
-        
+
         setBrandName(data.name); // Set the brand name for the header
 
         // The car models are inside the 'car_models' key of the brand detail response
@@ -84,6 +84,7 @@ export default function ModelsPage(): JSX.Element {
           </p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            
             {carModels.map((model) => (
               <BrandCard
                 key={model.id}
@@ -96,7 +97,7 @@ export default function ModelsPage(): JSX.Element {
                 // Har bir model o'zining kategoriyalariga emas, balki
                 // o'ziga mos mahsulotlar sahifasiga yo'naltirishi kerak
                 // Masalan: `/models/${model.id}/products` yoki shunga o'xshash
-                href={`/models/${brandId}/${model.id}`} // Kategoriya emas, mahsulotlar sahifasiga yo'naltirish
+                href={`/categories/${model.id}`} // Kategoriya emas, mahsulotlar sahifasiga yo'naltirish
                 productCount={model.products?.length || 0} // Mahsulotlar sonini API javobidan olish
               />
             ))}

@@ -21,29 +21,28 @@ export function BrandCard({
 }: BrandCardProps): JSX.Element {
   return (
     <Link href={href}>
-      <div className="group relative bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary transform hover:-translate-y-0.5 cursor-pointer">
-        {/* Content */}
-        <div className="relative p-3 text-center space-y-2">
+      <div className="group relative w-40 h-36 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary transform hover:-translate-y-0.5 cursor-pointer">
+        <div className="relative  h-full flex flex-col items-center justify-between text-center">
           {/* Logo container */}
-          <div className="relative mx-auto h-full w-full flex items-center justify-center rounded-xl  transition-colors duration-300">
+          <div className="relative w-full h-24 flex items-center justify-center rounded-xl bg-gray-50 group-hover:bg-gray-100 transition-colors duration-300">
             <Image
               src={
                 logo ||
                 "https://upload.wikimedia.org/wikipedia/commons/4/44/BMW.svg"
               }
               alt={name}
-              width={100}
-              height={60}
-              className="object-contain group-hover:scale-105 transition-transform duration-300 max-h-32 max-w-full"
+              width={80}
+              height={50}
+              className="object-contain group-hover:scale-105 transition-transform duration-300 max-h-full max-w-full"
             />
           </div>
           {/* Brand name */}
-          <h3 className="font-semibold text-gray-900 text-sm leading-tight group-hover:text-primary transition-colors duration-200 line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-semibold text-gray-900 text-xs leading-tight group-hover:text-primary transition-colors duration-200 line-clamp-2 min-h-[2rem] mt-1">
             {name}
           </h3>
-          {/* Product count if provided */}
+          {/* Product count */}
           {productCount && (
-            <p className="text-xs text-gray-600 group-hover:text-gray-700 transition-colors duration-200">
+            <p className="text-[10px] text-gray-600 group-hover:text-gray-700 transition-colors duration-200">
               {productCount.toLocaleString()} mahsulot
             </p>
           )}
