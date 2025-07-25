@@ -1,8 +1,8 @@
-// app/checkout/CheckoutClientComponent.tsx
+// app/checkout/CheckoutForm.tsx
 "use client"; // Bu direktiva juda muhim! Bu faylni Client Component deb belgilaydi.
 
-import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation"; // Endi bu hook Client Component ichida
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation"; // << useSearchParams endi shu yerda
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import dynamic from "next/dynamic";
 
 interface CartItem {
   id: number;
@@ -61,19 +60,8 @@ interface OrderPayload {
   notes?: string;
 }
 
-const CheckoutClientComponent = dynamic(
-  () => import("./../../data/checkout-client"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-lg text-gray-700">Yuklanmoqda...</p>
-      </div>
-    ), // Yuklanish holati uchun opsiyonel fallback
-  }
-);
-
-export default function CheckoutPage(): React.JSX.Element {
+// Bu sizning asosiy client komponentingiz
+export default function CheckoutForm(): React.JSX.Element {
   const [step, setStep] = useState<"details" | "payment" | "success">(
     "details"
   );
@@ -86,7 +74,7 @@ export default function CheckoutPage(): React.JSX.Element {
   });
 
   const { toast } = useToast();
-  const searchParams = useSearchParams(); // << useSearchParams endi shu yerda
+  const searchParams = useSearchParams(); // << useSearchParams endi shu yerda joylashgan
 
   const urlProductId = searchParams.get("productId");
   const urlQuantity = searchParams.get("quantity");
@@ -299,6 +287,7 @@ export default function CheckoutPage(): React.JSX.Element {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
+          {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Link href="/cart" className="text-gray-600 hover:text-gray-900">
               <ArrowLeft className="h-5 w-5" />
@@ -307,16 +296,8 @@ export default function CheckoutPage(): React.JSX.Element {
               Buyurtmani rasmiylashtirish
             </h1>
           </div>
-          <Suspense
-            fallback={
-              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <p className="text-lg text-gray-700">Sahifa yuklanmoqda...</p>
-              </div>
-            }
-          >
-            <CheckoutClientComponent />
-          </Suspense>
 
+          {/* Progress Steps */}
           <div className="flex items-center justify-center mb-8 flex-wrap gap-y-4">
             <div className="flex items-center gap-2">
               <div
@@ -364,6 +345,7 @@ export default function CheckoutPage(): React.JSX.Element {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
+            {/* Main Content (Details or Payment) */}
             <div className="lg:col-span-2 min-w-0">
               {step === "details" && (
                 <Card className="rounded-xl shadow-none border border-gray-200">
@@ -616,7 +598,7 @@ export default function CheckoutPage(): React.JSX.Element {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-700">Yetkazib berish:</span>
+                      <span className="text-gray-700">Yetkazib berish:</span>
                       <span
                         className={`font-medium ${
                           deliveryFee === 0 ? "text-green-600" : "text-gray-900"
