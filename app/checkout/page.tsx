@@ -1,7 +1,7 @@
 // app/checkout/CheckoutClientComponent.tsx
 "use client"; // Bu direktiva juda muhim! Bu faylni Client Component deb belgilaydi.
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation"; // Endi bu hook Client Component ichida
 import Link from "next/link";
 import Image from "next/image";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import dynamic from "next/dynamic";
 
 interface CartItem {
   id: number;
@@ -60,7 +61,19 @@ interface OrderPayload {
   notes?: string;
 }
 
-export default function CheckoutClientComponent(): React.JSX.Element {
+const CheckoutClientComponent = dynamic(
+  () => import("./../../data/checkout-client"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-lg text-gray-700">Yuklanmoqda...</p>
+      </div>
+    ), // Yuklanish holati uchun opsiyonel fallback
+  }
+);
+
+export default function CheckoutPage(): React.JSX.Element {
   const [step, setStep] = useState<"details" | "payment" | "success">(
     "details"
   );
@@ -294,6 +307,15 @@ export default function CheckoutClientComponent(): React.JSX.Element {
               Buyurtmani rasmiylashtirish
             </h1>
           </div>
+          <Suspense
+            fallback={
+              <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <p className="text-lg text-gray-700">Sahifa yuklanmoqda...</p>
+              </div>
+            }
+          >
+            <CheckoutClientComponent />
+          </Suspense>
 
           <div className="flex items-center justify-center mb-8 flex-wrap gap-y-4">
             <div className="flex items-center gap-2">
