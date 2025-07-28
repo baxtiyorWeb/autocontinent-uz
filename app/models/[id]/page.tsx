@@ -83,14 +83,13 @@ export default function ModelsPage(): JSX.Element {
             Bu brend uchun modellar topilmadi.
           </p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 max-sm:grid-cols-4">
             {carModels.map((model) => (
               <BrandCard
                 key={model.id}
                 id={model.id}
                 name={model.name}
-                // --- KORREKSIYA BU YERDA ---
+                // --- KORREKSIYA BU YERDA ---s
                 // `model.image` to'g'ridan-to'g'ri rasm URL manzilini o'z ichiga oladi
                 // Agar `model.image` null bo'lsa, placeholder rasm ishlatilsin
                 logo={model.image || "/placeholder.svg"}

@@ -113,7 +113,7 @@ export function CategoriesSection({
             Brendlar topilmadi.
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 max-sm:grid-cols-4">
             {brands.map((brand) => (
               <BrandCard
                 key={brand.id}

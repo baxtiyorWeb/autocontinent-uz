@@ -168,10 +168,10 @@ export function EnhancedProductCard({
 
   return (
     <>
-      <div className="group relative flex flex-col bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary transform hover:-translate-y-0.5">
+      <div className="group relative flex flex-col bg-white  transition-all duration-300 overflow-hidden border-none  transform hover:-translate-y-0.5">
         {/* Product Image Section */}
         <div className="relative overflow-hidden rounded-t-lg">
-          <Link href={`/products/${id}`}>
+          <Link href={`/product/${id}`}>
             <Image
               src={primaryImage}
               alt={name}
@@ -233,7 +233,7 @@ export function EnhancedProductCard({
               asChild
               aria-label="View product details"
             >
-              <Link href={`/products/${id}`}>
+              <Link href={`/product/${id}`}>
                 <Eye className="h-3 w-3 xs:h-4 xs:w-4 text-gray-600" />
               </Link>
             </Button>
@@ -280,7 +280,7 @@ export function EnhancedProductCard({
             </div>
           </div>
           {/* Product Name */}
-          <Link href={`/products/${id}`} className="flex-grow">
+          <Link href={`/product/${id}`} className="flex-grow">
             <h3 className="font-semibold max-sm-xs:text-xs text-gray-800 text-xs xs:text-sm leading-tight line-clamp-2 hover:text-primary transition-colors duration-200 min-h-[2.5rem]  max-sm-xs:max-h-[1.5rem] mb-1">
               {name}
             </h3>

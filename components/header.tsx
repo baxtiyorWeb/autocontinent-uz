@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import useSearchFunk from "@/hooks/useSearchFunk";
 
 // Define a type for the user data we expect from localStorage
 interface UserData {
@@ -29,7 +30,7 @@ export function Header(): JSX.Element {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+  const { value, setValue, handleClick } = useSearchFunk();
   // Effect to check for user data in localStorage on component mount
   useEffect(() => {
     try {
@@ -100,14 +101,15 @@ export function Header(): JSX.Element {
         {/* Search */}
         <div className="flex-1 max-w-2xl mx-4 hidden lg:block">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute  left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 bg-[#F6F6F6]" />
             <Input
               type="text"
               placeholder="Qidirish... (masalan: motor, tormoz, filtr)"
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchQuery(e.target.value)
-              }
+              value={value}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleClick();
+              }}
+              onChange={(e) => setValue(e.target.value)}
               className="pl-10 pr-4 py-2 w-full"
             />
           </div>
@@ -186,11 +188,12 @@ export function Header(): JSX.Element {
           <Input
             type="text"
             placeholder="Mahsulotlar va turkumlar izlash"
-            value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchQuery(e.target.value)
-            }
-            className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-primary focus:border-primary"
+            value={value}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleClick();
+            }}
+            onChange={(e) => setValue(e.target.value)}
+            className="pl-10 pr-2 py-6 w-full bg-[#F6F6F6] border-none rounded-lg  focus:ring-primary focus:border-primary"
           />
         </div>
       </div>

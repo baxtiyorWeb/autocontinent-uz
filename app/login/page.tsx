@@ -74,6 +74,9 @@ export default function LoginPage(): JSX.Element {
       if (response.status === 200 && response.data.success) {
         console.log("Verification successful:", response.data);
         localStorage.setItem("userData", JSON.stringify(response.data.data));
+        console.log("Verification successful:", response.data);
+        localStorage.setItem("accessToken", response.data.data.access);
+        localStorage.setItem("refreshToken", response.data.data.refresh);
         console.log("User data saved to localStorage.");
         setTimeout(() => {
           window.location.href = "/";
